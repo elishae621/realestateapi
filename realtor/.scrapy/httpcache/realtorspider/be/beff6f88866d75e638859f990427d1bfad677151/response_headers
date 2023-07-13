@@ -1,0 +1,21 @@
+Cache-Control: no-cache, no-store
+Content-Type: text/html; charset=utf-8
+Date: Thu, 13 Jul 2023 10:55:49 GMT
+Etag: "108873-yIc7BcmLs0kg/DW2GD1NL/R25Bo"
+Referrer-Policy: strict-origin-when-cross-origin
+Server: CloudFront
+Set-Cookie: ldp_experience=RDC_X
+split=n; Max-Age=1209600; Path=/
+split_tcv=133; Max-Age=1209600; Path=/
+__vst=83b733df-f8a7-4cff-a05a-e7848cbfad7d; Max-Age=31536000; Path=/
+__bot=false; Max-Age=31536000; Path=/
+Strict-Transport-Security: max-age=31536000
+Vary: Accept-Encoding
+Via: 1.1 01d6fde3506f3f6ef8601203e2d83ed0.cloudfront.net (CloudFront)
+X-Amz-Cf-Id: 0jYcYumAaZMMyBz7OyJHb4G8kmUHqfB2fSmJ5A0029hYL_QO3ZeXNA==
+X-Amz-Cf-Pop: LOS50-P1
+X-Cache: Miss from cloudfront
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-Powered-By: Next.js
+X-Xss-Protection: 1; mode=block

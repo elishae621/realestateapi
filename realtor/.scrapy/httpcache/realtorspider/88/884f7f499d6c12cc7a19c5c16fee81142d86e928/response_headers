@@ -1,0 +1,20 @@
+Cache-Control: private, s-maxage=300
+Content-Type: text/html; charset=utf-8
+Date: Thu, 13 Jul 2023 08:58:45 GMT
+Etag: "e0618-1Io9/f6jB8B08yLQkTVXqYmTNW8"
+Referrer-Policy: strict-origin-when-cross-origin
+Server: CloudFront
+Set-Cookie: split=n; Max-Age=31536000; Path=/; Expires=Fri, 12 Jul 2024 08:58:44 GMT
+split_tcv=199; Max-Age=31536000; Path=/; Expires=Fri, 12 Jul 2024 08:58:44 GMT
+__vst=e43b5d24-8347-4bf8-baab-c0c6d8f52b13; Max-Age=31536000; Path=/
+__bot=false; Max-Age=31536000; Path=/
+Strict-Transport-Security: max-age=31536000
+Vary: Accept-Encoding
+Via: 1.1 452f8bbfddb264dd04edba5e8b727f74.cloudfront.net (CloudFront)
+X-Amz-Cf-Id: 5oQTgCPCn8DaaG4Q_t9V2NuI9Sz8H8AImvQjIaJvct1kMfjq6rBZqQ==
+X-Amz-Cf-Pop: LOS50-P1
+X-Cache: Miss from cloudfront
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-Powered-By: Express
+X-Xss-Protection: 1; mode=block
