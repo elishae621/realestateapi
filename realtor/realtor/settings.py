@@ -85,7 +85,7 @@ DEFAULT_REQUEST_HEADERS = {
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    "realtor.middlewares.RealtorSpiderMiddleware": 543,
+#    "realtor.middlewares.RealtorMiddleware": 543,
 #}
 
 # Enable or disable downloader middlewares
