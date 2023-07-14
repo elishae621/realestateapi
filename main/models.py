@@ -1,81 +1,108 @@
 from django.db import models
 from autoslug import AutoSlugField
-import uuid
-import random
-
-def generate_filename():
-    return str(uuid.uuid4())[-3:].upper() + '-' + str(random.randint(1, 1000))
-
-randnum = str(random.randint(1, 100))
-
-class PaymentFrequency(models.TextChoices):
-    OneTime = ''
-    YEARLY = 'YEARLY'
-    MONTHLY = 'MONTHLY'
-    WEEKLY = 'WEEKLY'
-    DAILY = 'DAILY'
 
 
-class Category(models.TextChoices):
-    RENT = 'RENT'
-    SALE = 'SALE'
+# Property is grouped into the following:
+# Property information
+# location information
+# price infromation
+# details
+# features 
+# environmental factors 
+# agent & broker
 
 class Property(models.Model):
     address = models.TextField(null=True, blank=True)
     slug = AutoSlugField(populate_from='address', unique_with=['pk',],)
-    price = models.IntegerField()
+    source_url = models.URLField(max_length=200)
+    flood_factor_score = models.IntegerField()
+    flood_fema_zone = models.CharField(max_length=5)
+    move_in_date = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=10)
+    coming_soon_date = models.DateTimeField(null=True, blank=True)
+    list_price = models.IntegerField()
+    list_price_change_amount = models.IntegerField()
+    list_price_min = models.IntegerField()
+    list_price_max = models.IntegerField()
     price_per_sqft = models.IntegerField()
-    monthly_payment = models.IntegerField()
-    category = models.CharField(choices=Category.choices, max_length=10)
-    author = models.ForeignKey('main.Agent', null=True, on_delete=models.CASCADE)
-    bedrooms = models.CharField(max_length=200)
-    bathrooms = models.CharField(max_length=200)
-    other_rooms = models.CharField(max_length=200)
-    studio = models.BooleanField()
-    interior_features = models.TextField()
-    kitchen_and_dinning = models.TextField()
-    appliances = models.TextField()
-    area = models.IntegerField(null=True, blank=True, help_text="in sqft")
-    neighborhood = models.CharField(max_length=20)
-    area = models.CharField(max_length=200)
-    lot_sqft = models.IntegerField()
-    county = models.CharField(max_length=20)
-    state = models.CharField(max_length=20)
-    country = models.CharField(max_length=20)
-    property_type = models.CharField(max_length=30)
-    property_subtype = models.CharField(max_length=30)
-    last_updated = models.DateTimeField(auto_now=True)
-    pets_allowed = models.BooleanField()
-    pets_features = models.BooleanField()
-    year_built = models.PositiveIntegerField(null=True, blank=True)
-    availablity = models.DateField(null=True, blank=True)
-    about = models.TextField()
-    heating_and_cooling = models.TextField()
-    garage_and_parking = models.TextField()
-    homeowners_association = models.TextField()
-    hoa_fees = models.TextField()
-    school_information = models.TextField()
-    property_info = models.TextField()
-    building_and_construction = models.TextField()
-    land_info = models.TextField()
-    utilities = models.TextField()
-    manufactured_and_mobile_info = models.TextField()
-    home_features = models.TextField()
-    amenities = models.TextField()
-    features = models.TextField()
-    one_time_fees = models.TextField()
-    one_time_fees = models.TextField()
-    recurring_fees = models.TextField()
-    lease_terms = models.TextField()
-    
-    flood_factor = models.CharField(max_length=20)
-    fire_factor = models.CharField(max_length=20)
+    list_date = models.DateTimeField(null=True, blank=True)
     schools = models.ManyToManyField('main.School', verbose_name="Nearby Schools")
     schools = models.ManyToManyField('main.Property', verbose_name="Nearby Properties")
-    data_source = models.CharField(max_length=50)
-    data_source_copyright = models.CharField(max_length=50)
+    waterfront_water_access = models.ManyToManyField('main.ListItem', related_name='waterfront_water_access_item')
+    land_info = models.ManyToManyField('main.ListItem', related_name='land_info_item')
+    school_information = models.ManyToManyField('main.ListItem', related_name='school_info_item')
+    hoa = models.ManyToManyField('main.ListItem', related_name='hoa_item')
+    other_property_info = models.ManyToManyField('main.ListItem', related_name='property_info_item')
+    utilities = models.ManyToManyField('main.ListItem', related_name='utility')
+    street_view_url = models.URLField(max_length=400)
+    street_view_metadata_url = models.URLField(max_length=400)
+    street_number = models.CharField(max_length=20),
+    street_direction = models.CharField(max_length=20)
+    street_name = models.CharField(max_length=100)
+    street_suffix = models.CharField(max_length=20)
+    street_post_direction = models.CharField(max_length=20)
+    unit = models.CharField(max_length=20)
+    city = models.CharField(max_length=20)
+    state_code = models.CharField(max_length=5)
+    postal_code = models.CharField(max_length=10)
+    country = models.CharField(max_length=20)
+    validation_code = models.CharField(max_length=10)
+    state = models.CharField(max_length=20)
+    lat = models.DecimalField(decimal_places=6, max_digits=10)
+    lon = models.DecimalField(decimal_places=6, max_digits=10)
+    county = models.CharField(max_length=20)
+    cross_street = models.CharField(max_length=20)
+    driving_directions = models.CharField(max_length=20)
+    builder = models.CharField(max_length=20)
+    tags = models.ManyToManyField('main.ListItem', related_name="tag")
+    unit_count = models.IntegerField()
+    baths = models.IntegerField()
+    baths_consolidated = models.IntegerField()
+    baths_full = models.IntegerField()
+    baths_3qtr = models.IntegerField()
+    baths_half = models.IntegerField()
+    baths_1qtr = models.IntegerField()
+    baths_min = models.IntegerField()
+    baths_max = models.IntegerField()
+    beds_min = models.IntegerField()
+    beds_max = models.IntegerField()
+    beds = models.IntegerField()
+    garage = models.CharField(max_length=20)
+    pool = models.CharField(max_length=20)
+    sqft = models.IntegerField()
+    sqft_min = models.IntegerField()
+    sqft_max = models.IntegerField()
+    lot_sqft = models.IntegerField()
+    rooms = models.IntegerField()
+    stories = models.IntegerField()
+    sub_type = models.CharField(max_length=20)
+    text = models.TextField()
+    type = models.CharField(max_length=20)
+    units = models.IntegerField()
+    unit_type = models.CharField(max_length=20)
+    year_built = models.IntegerField()
+    name = models.CharField(max_length=50)
     
+    def __str__(self):
+        return self.slug
 
+class ListItem(models.Model):
+    name = models.CharField(max_length=200)
+
+class Flags(models.Model):
+    property = models.OneToOneField(Property, on_delete=models.CASCADE)
+    is_pending = models.BooleanField(null=True)
+    is_contingent = models.BooleanField(null=True)
+    is_new_listing = models.BooleanField(null=True)
+    is_new_construction = models.BooleanField(null=True)
+    is_short_sale = models.BooleanField(null=True)
+    is_foreclosure = models.BooleanField(null=True)
+    is_price_reduced = models.BooleanField(null=True)
+    is_senior_community = models.BooleanField(null=True)
+    is_deal_available = models.BooleanField(null=True)
+    is_price_excludes_land = models.BooleanField(null=True)
+    is_subdivision = models.BooleanField(null=True)
+    is_coming_soon = models.BooleanField(null=True)
 
 class Neighborhood(models.Model):
     name = models.CharField(max_length=50)
@@ -90,12 +117,12 @@ class Neighborhood(models.Model):
 
 class FloorPlan(models.Model):
     
-    def image_location(self, filename):
-        format = filename.split('.')[1]
-        filename = generate_filename() + '.' + format
-        return '/'.join(['floorplan/', self.property.country,
-                         self.property.state,
-                         self.property.county, self.property.s[:20] + str(randnum), filename])
+    # def image_location(self, filename):
+    #     format = filename.split('.')[1]
+    #     filename = generate_filename() + '.' + format
+    #     return '/'.join(['floorplan/', self.property.country,
+    #                      self.property.state,
+    #                      self.property.county, self.property.s[:20] + str(randnum), filename])
 
     property = models.ForeignKey(Property, null=True, on_delete=models.CASCADE)
     name = models.CharField(max_length=20)
@@ -106,15 +133,15 @@ class FloorPlan(models.Model):
     price = models.IntegerField()
     image = models.ImageField()
 
-class PropertyPriceHistory(models.Model):
+class PriceHistory(models.Model):
     property = models.ForeignKey(Property, null=True, on_delete=models.CASCADE)
     date = models.DateField(null=True)
     event = models.CharField(max_length=20)
     price = models.IntegerField()
-    price_per_sqft = models.IntegerField()
+    price_sqft = models.IntegerField()
     source = models.CharField(max_length=20)
     
-class PropertyTaxHistory(models.Model):
+class TaxHistory(models.Model):
     property = models.ForeignKey(Property, null=True, on_delete=models.CASCADE)
     year = models.IntegerField()
     taxes = models.IntegerField()
@@ -124,16 +151,21 @@ class PropertyTaxHistory(models.Model):
 
 class School(models.Model):
     name = models.CharField(max_length=50)
+    education_levels = models.ManyToManyField('main.ListItem', related_name='level')
+    distance_in_miles = models.DecimalField(decimal_places=1, max_digits=4)
+    student_teacher_ratio = models.DecimalField(decimal_places=1, max_digits=4)
     rating = models.IntegerField()
-    school_type = models.CharField(max_length=10)
-    students = models.IntegerField()
-    no_of_reviews = models.IntegerField()
-    distance = models.DecimalField(decimal_places=1, max_digits=4, help_text='in miles')
-    grades = models.CharField(max_length=10)
-    category = models.CharField(max_length=20)
+    grades = models.ManyToManyField('main.ListItem', related_name='grade')
+    funding_type = models.CharField(max_length=10)
+    student_count = models.IntegerField()
+    review_count = models.IntegerField()
+    parent_rating = models.IntegerField()
+    assigned = models.BooleanField(null=True)
 
 
 class Agent(models.Model):
+    agent_id = models.CharField(max_length=20, unique=True)
+    atype = models.CharField(max_length=20)
     name = models.CharField(max_length=20)
     brokerage = models.CharField(max_length=50)
     phone = models.CharField(max_length=20)
@@ -149,17 +181,10 @@ class Agent(models.Model):
     broker_website = models.URLField(max_length=200)
 
 class Image(models.Model):
-    def image_location(self, filename):
-        format = filename.split('.')[1]
-        filename = generate_filename() + '.' + format
-        return '/'.join(['property/', self.property.country,
-                         self.property.state,
-                         self.property.county, self.property.s[:20] + str(randnum), filename])
-    
-    image = models.ImageField()
     property = models.ForeignKey(Property, blank=True, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to=image_location, max_length=300)
-    base64 = models.TextField(null=True, blank=True)
-
-    def __str__(self):
-        return self.property.title
+    url = models.URLField(max_length=200)
+    
+class ImageTag(models.Model):
+    image = models.ForeignKey(Image, on_delete=models.CASCADE)
+    label = models.CharField(max_length=20)
+    probability = models.DecimalField(decimal_places=20, max_digits=25)
