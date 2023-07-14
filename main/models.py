@@ -15,6 +15,8 @@ class Property(models.Model):
     address = models.TextField(null=True, blank=True)
     slug = AutoSlugField(populate_from='address', unique_with=['pk',],)
     source_url = models.URLField(max_length=200)
+    agent = models.ForeignKey('main.Agent', null=True, on_delete=models.CASCADE)
+    Neighborhood = models.ForeignKey('main.Neighborhood', null=True, on_delete=models.CASCADE)
     flood_factor_score = models.IntegerField()
     flood_fema_zone = models.CharField(max_length=5)
     move_in_date = models.DateTimeField(null=True, blank=True)
@@ -27,7 +29,6 @@ class Property(models.Model):
     price_per_sqft = models.IntegerField()
     list_date = models.DateTimeField(null=True, blank=True)
     schools = models.ManyToManyField('main.School', verbose_name="Nearby Schools")
-    schools = models.ManyToManyField('main.Property', verbose_name="Nearby Properties")
     waterfront_water_access = models.ManyToManyField('main.ListItem', related_name='waterfront_water_access_item')
     land_info = models.ManyToManyField('main.ListItem', related_name='land_info_item')
     school_information = models.ManyToManyField('main.ListItem', related_name='school_info_item')
@@ -183,6 +184,9 @@ class Agent(models.Model):
 class Image(models.Model):
     property = models.ForeignKey(Property, blank=True, on_delete=models.CASCADE)
     url = models.URLField(max_length=200)
+    
+    def __str__(self):
+        return '{} - {}'.format(self.property.slug, self.url)
     
 class ImageTag(models.Model):
     image = models.ForeignKey(Image, on_delete=models.CASCADE)

@@ -1,3 +1,6 @@
 from django.shortcuts import render
+from realtor.realtor.spiders.realtorspider import scrape
 
-# Create your views here.
+def home(request):
+    scrape()
+    render(request, "<h1>Running</h1>", context={})

@@ -4,13 +4,26 @@ import random
 import os
 import logging
 import json
+import scrapy
 from bs4 import BeautifulSoup
 from pathlib import Path
-from scrapy.crawler import CrawlerProcess
+from twisted.internet import reactor
+from scrapy.crawler import CrawlerProcess, CrawlerRunner
+from scrapy.utils.log import configure_logging
+from scrapy.utils.project import get_project_settings
 from dateutil.parser import parse
-from scrapy_playwright.page import PageMethod
+from multiprocessing import Process, Queue
+from twisted.internet import reactor
 from decimal import Decimal
+import django
+django.setup()
 from main import models
+
+# import sys
+# from importlib import import_module
+
+# sys.path.append('main')
+# models = import_module('models')
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
@@ -46,7 +59,6 @@ class RealtorspiderSpider(scrapy.Spider):
     name = "realtorspider"
     allowed_domains = ["realtor.com"]
     custom_settings={
-            "TWISTED_REACTOR": "twisted.internet.asyncioreactor.AsyncioSelectorReactor",
             "DOWNLOAD_HANDLERS": {
                 "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
                 "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
@@ -68,12 +80,17 @@ class RealtorspiderSpider(scrapy.Spider):
                 }
             },
         }
+    if __name__ == '__main__':
+        custom_settings["TWISTED_REACTOR"] = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
+    else:
+        custom_settings["TWISTED_REACTOR"] = "twisted.internet.selectreactor.SelectReactor"
     
     def start_requests(self):
         category_dict = {
             'buy': 'realestateandhomes-search',
             'rent': 'apartments'   
         }
+        # https://www.realtor.com/realestateandhomes-detail/7309-Azimuth-Ln_Sacramento_CA_95842_M29288-48779
         link = 'https://www.realtor.com/realestateandhomes-detail/12475-State-Highway-180-Lot-37_Gulf-Shores_AL_36542_M93923-36924/'
         self.logger.info('in property link = {}'.format(link))
         yield scrapy.Request(link,
@@ -303,12 +320,42 @@ class RealtorspiderSpider(scrapy.Spider):
         data = json.loads(soup.css.select('script#__NEXT_DATA__')[0].text)['props']['pageProps']
         # agent = models.Agent.objects.get(agent_id=agent_id)
         
+
+def f(q, spider, page, category):
+    try:
+        settings = get_project_settings()
+        runner = CrawlerRunner(settings)
+        deferred = runner.crawl(spider, page=page, category=category)
+        deferred.addBoth(lambda _: reactor.stop())
+        reactor.run()
+        q.put(None)
+    except Exception as e:
+        q.put(e)
+            
+def run_spider(spider, page, category):
+    q = Queue()
+    p = Process(target=f, args=(q,spider,page,category))
+    p.start()
+    result = q.get()
+    p.join()
+
+    if result is not None:
+        raise result
     
-if __name__ == "__main__":
-    process = CrawlerProcess()
-    for page in range(1, 300):
-        for category in ['buy', 'rent']:
-            logging.info('starting')
-            process.crawl(RealtorspiderSpider, page=page, category=category)
-            process.start()
-    logging.info("finished")
+def scrape():
+    if __name__ == "__main__":
+        process = CrawlerProcess()
+        for page in range(1, 300):
+            for category in ['buy', 'rent']:
+                logging.info('starting')
+                process.crawl(RealtorspiderSpider, page=page, category=category)
+                process.start()
+        logging.info("finished")    
+    else:
+        for page in range(1, 300):
+            for category in ['buy', 'rent']:
+                logging.info('starting')
+                configure_logging()
+                run_spider(RealtorspiderSpider, page=page, category=category)
+        logging.info("finished")
+        
