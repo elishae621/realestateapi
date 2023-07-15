@@ -9,6 +9,7 @@ from scrapy.crawler import CrawlerProcess, CrawlerRunner
 from scrapy.utils.log import configure_logging
 from scrapy.utils.project import get_project_settings
 from multiprocessing import Process, Queue
+from scrapy_playwright.page import PageMethod
 
 
 
@@ -40,7 +41,6 @@ class RealtorspiderSpider(scrapy.Spider):
     name = "realtorspider"
     allowed_domains = ["realtor.com", "localhost"]
     custom_settings={
-        #  "TWISTED_REACTOR": "twisted.internet.asyncioreactor.AsyncioSelectorReactor",
             "DOWNLOAD_HANDLERS": {
                 "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
                 "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
@@ -62,11 +62,6 @@ class RealtorspiderSpider(scrapy.Spider):
                 }
             },
         }
-    # if __name__ == '__main__':
-    #     custom_settings["TWISTED_REACTOR"] = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
-
-    # else:
-    #     custom_settings["TWISTED_REACTOR"] = "twisted.internet.selectreactor.SelectReactor"
     
     def start_requests(self):
         category_dict = {
@@ -74,24 +69,27 @@ class RealtorspiderSpider(scrapy.Spider):
             'rent': 'apartments'   
         }
         # https://www.realtor.com/realestateandhomes-detail/7309-Azimuth-Ln_Sacramento_CA_95842_M29288-48779
-        link = 'https://www.realtor.com/realestateandhomes-detail/12475-State-Highway-180-Lot-37_Gulf-Shores_AL_36542_M93923-36924/'
-        self.logger.info('in property link = {}'.format(link))
-        yield scrapy.Request(link,
-            headers=headers,)
+        url = 'https://www.realtor.com/realestateandhomes-detail/12475-State-Highway-180-Lot-37_Gulf-Shores_AL_36542_M93923-36924/'
+        
         # for state in states:
         # for state in ['Alabama']:
         #     url = f'https://www.realtor.com/{category_dict[self.category]}/{state}/pg-{self.page}'
-        #     self.logger.info('in url = {}'.format(url))
-        #     yield scrapy.Request(url,
-        #         headers=headers,
-        #         callback=self.parse_state,
-        #         meta=dict(
-        #         playwright = True,
-        #         playwright_include_page = True,
-        #         playwright_page_coroutines = [
-        #         PageMethod("wait_for_selector", "div.result-list"),
-        #         ]
-        #     ))
+        if 'realestateandhomes-detail' in url:
+            self.logger.info('in property link = {}'.format(url))
+            yield scrapy.Request(url,
+                headers=headers,)
+        else:
+            self.logger.info('in state url = {}'.format(url))
+            yield scrapy.Request(url,
+                headers=headers,
+                callback=self.parse_state,
+                meta=dict(
+                playwright = True,
+                playwright_include_page = True,
+                playwright_page_coroutines = [
+                PageMethod("wait_for_selector", "div.result-list"),
+                ]
+            ))
 
     def parse_state(self, response):
         self.logger.info("Parse state function called on %s", response.url)
@@ -109,20 +107,14 @@ class RealtorspiderSpider(scrapy.Spider):
         for link in links:
             self.logger.info('in property link = {}'.format(link))
             yield scrapy.Request(link,
-                headers=headers,
-                callback=self.parse_property,
-                meta=dict(
-                playwright = True,
-                playwright_include_page = True,
-            ))
+                headers=headers,)
 
-    
 
     def parse(self, response):
         self.logger.info("Parse property function called on %s", response.url)
         soup = BeautifulSoup(response.text, 'html.parser')
         data = json.loads(soup.css.select('script#__NEXT_DATA__')[0].text)['props']['pageProps']['property']
-        if len(data['local'] > 1):
+        if len(data['local']) > 1:
             pass
         if data['community']:
             pass
@@ -207,4 +199,3 @@ class RealtorspiderSpider(scrapy.Spider):
 #                 configure_logging()
 #                 run_spider(RealtorspiderSpider, page=page, category=category)
 #         logging.info("finished")
-        

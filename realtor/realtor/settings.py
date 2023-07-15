@@ -6,8 +6,7 @@
 #     https://docs.scrapy.org/en/latest/topics/settings.html
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-import playwright
-import scrapy
+from pathlib import Path
 import random
 import os
 import sys
@@ -15,7 +14,7 @@ import sys
 # DJANGO INTEGRATION
 
 sys.path.append(os.path.dirname(os.path.abspath('.')))
-# Do not forget the change iCrawler part based on your project name
+# Do not forget the change realtor part based on your project name
 os.environ['DJANGO_SETTINGS_MODULE'] = 'realtor.settings'
 
 # This is required only if Django Version > 1.8
@@ -23,9 +22,15 @@ import django
 django.setup()
 
 
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+sys.path.append(BASE_DIR)
+
+
 BOT_NAME = "realtor"
 
-SPIDER_MODULES = ["realtor.spiders"]
+SPIDER_MODULES = ["realtor.realtor.spiders"]
 NEWSPIDER_MODULE = "realtor.spiders"
 
 # playwright
@@ -115,7 +120,7 @@ DEFAULT_REQUEST_HEADERS = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   "realtor.pipelines.RealtorPipeline": 300,
+   "realtor.realtor.pipelines.RealtorPipeline": 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
