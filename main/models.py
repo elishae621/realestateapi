@@ -12,6 +12,10 @@ from autoslug import AutoSlugField
 # agent & broker
 
 class Property(models.Model):
+    class Meta:
+        verbose_name = 'Property'
+        verbose_name_plural = 'Properties'
+        
     address = models.TextField(null=True, blank=True)
     slug = AutoSlugField(populate_from='address', unique_with=['pk',],)
     source_url = models.URLField(max_length=200)
