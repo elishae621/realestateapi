@@ -25,21 +25,24 @@ sys.path.append(BASE_DIR)
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-meta = {
-    # 'proxy': env('PROXY_URL'),
-}
+meta = {}
     
-def extract(item, filters, date=False, image=False):
+def extract(item, filters, date=False, image=False, decimal=False):
     filters_list = filters.split(",")
+    value = item
     try:
-        while filters_list:
-            item[filters_list[0]]
+        while filters_list and value:
+            value = value[filters_list[0]]
             filters_list.pop(0)
-    except IndexError:
+    except KeyError:
         return None
     if image:
         item['href'].replace('.jpg', '-w480_h360_x2.jpg')
-    return item if not date else parse(item)
+    if value and decimal:
+        value = Decimal(value)
+    if value and date:
+        value = parse(value)
+    return value
 
 states = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado",
   "Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois",
@@ -70,8 +73,6 @@ headers = {
 def custom_headers(browser_type, playwright_request, scrapy_headers):
     return headers
 
-def extract(value):
-    return value if value else None
 class RealtorspiderSpider(scrapy.Spider):
     name = "realtorspider"
     allowed_domains = ["realtor.com", "localhost"]
@@ -138,7 +139,6 @@ class RealtorspiderSpider(scrapy.Spider):
             item = json.loads(soup.css.select('script#__NEXT_DATA__')[0].text)['props']['pageProps']['property']
         except:
             item = json.loads(soup.css.select('script#__NEXT_DATA__')[0].text)['props']['pageProps']['initialReduxState']['propertyDetails']
-        # print("data", data)
         property = models.Property.objects.create(
             flood_factor_severity=extract(item, 'local,flood,flood_factor_severity'),
             flood_trend=extract(item, 'local,flood,flood_trend'),
@@ -169,8 +169,8 @@ class RealtorspiderSpider(scrapy.Spider):
             country=extract(item, 'location,address,country'),
             validation_code=extract(item, 'location,address,validation_code'),
             state=extract(item, 'location,address,state'),
-            latitude=Decimal(extract(item, 'location,address,coordinate,lat')),
-            longitude=Decimal(extract(item, 'location,address,coordinate,lon')),
+            latitude=extract(item, 'location,address,coordinate,lat', decimal=True),
+            longitude=extract(item, 'location,address,coordinate,lon', decimal=True),
             driving_directions=extract(item, 'location,driving_directions'),
             builder=extract(item, 'builder'),
             baths=extract(item, 'description,baths'),
@@ -283,8 +283,8 @@ class RealtorspiderSpider(scrapy.Spider):
             
         for school in item['school']:
             sch = models.School.objects.create(
-                longitude=extract(school, 'coordinate,lon'),
-                latitude=extract(school, 'coordinate,lat'),
+                longitude=extract(school, 'coordinate,lon', decimal=True),
+                latitude=extract(school, 'coordinate,lat', decimal=True),
                 distance_in_miles=extract(school, 'distance_in_miles'),
                 district=extract(school, 'district,name'),
                 funding_type=extract(school, 'funding_type'),

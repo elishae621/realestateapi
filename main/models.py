@@ -31,7 +31,7 @@ class Property(models.Model):
     status = models.CharField(max_length=10, null=True, blank=True)
     coming_soon_date = models.DateTimeField(null=True, blank=True)
     list_price = models.IntegerField(null=True, blank=True)
-    list_price_change_amount = models.IntegerField(null=True, blank=True)
+    last_price_change_amount = models.IntegerField(null=True, blank=True)
     last_sold_date = models.DateTimeField(null=True, blank=True)
     last_sold_price = models.IntegerField(null=True, blank=True)
     price_per_sqft = models.IntegerField(null=True, blank=True)
@@ -45,7 +45,7 @@ class Property(models.Model):
     utilities = models.ManyToManyField('main.ListItem', related_name='utility')
     street_view_url = models.URLField(max_length=400, null=True, blank=True)
     street_view_metadata_url = models.URLField(max_length=400, null=True, blank=True)
-    street_number = models.CharField(max_length=20, null=True, blank=True),
+    street_number = models.CharField(max_length=20, null=True, blank=True)
     street_direction = models.CharField(max_length=20, null=True, blank=True)
     street_name = models.CharField(max_length=100, null=True, blank=True)
     street_suffix = models.CharField(max_length=20, null=True, blank=True)

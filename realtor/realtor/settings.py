@@ -117,8 +117,6 @@ DEFAULT_REQUEST_HEADERS = {
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    'scrapy_proxy_pool.middlewares.ProxyPoolMiddleware': 610,
-    'scrapy_proxy_pool.middlewares.BanDetectionMiddleware': 620,
     # "realtor.middlewares.RealtorDownloaderMiddleware": 543,
     'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 110,
 }
