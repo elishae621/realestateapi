@@ -6,9 +6,6 @@ class FlagsAdmin(admin.StackedInline):
     model = models.Flags
     
 
-class FloorPlanAdmin(admin.StackedInline):
-    model = models.FloorPlan
-    
 class PriceHistoryAdmin(admin.StackedInline):
     model = models.PriceHistory
     
@@ -26,7 +23,7 @@ class ImageTagAdmin(admin.StackedInline):
 @admin.register(models.Property)
 class PropertyAdmin(admin.ModelAdmin):
     list_display = ('slug', 'source_url')
-    inlines = [FlagsAdmin, FloorPlanAdmin, PriceHistoryAdmin, TaxHistoryAdmin, ImageAdmin]
+    inlines = [FlagsAdmin, PriceHistoryAdmin, TaxHistoryAdmin, ImageAdmin]
 
 
 @admin.register(models.Image)
