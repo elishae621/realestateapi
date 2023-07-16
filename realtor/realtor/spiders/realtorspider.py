@@ -1,8 +1,12 @@
 import scrapy
 import random
 import logging
+import time
 import json
 import scrapy
+import os
+import sys
+import environ
 from bs4 import BeautifulSoup
 from pathlib import Path
 from scrapy.crawler import CrawlerProcess, CrawlerRunner
@@ -11,7 +15,13 @@ from scrapy.utils.project import get_project_settings
 from multiprocessing import Process, Queue
 from scrapy_playwright.page import PageMethod
 
+BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
+sys.path.append(BASE_DIR)
 
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+# , meta={'proxy': env('PROXY_URL'),}
 
 states = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado",
   "Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois",
@@ -20,13 +30,20 @@ states = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado",
   "Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York",
   "North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania",
   "Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah",
-  "Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming", "Washington, DC"]
+  "Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming", "Washington_DC"]
 
 userAgentStrings = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.2227.0 Safari/537.36',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.2228.0 Safari/537.36',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.3497.92 Safari/537.36',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15',
 ]
 headers = {
     'User-Agent': random.choice(userAgentStrings),
@@ -41,16 +58,23 @@ class RealtorspiderSpider(scrapy.Spider):
     name = "realtorspider"
     allowed_domains = ["realtor.com", "localhost"]
     custom_settings={
+            "PROXY_POOL_ENABLED" : True,
+            "TWISTED_REACTOR": "twisted.internet.asyncioreactor.AsyncioSelectorReactor",
             "DOWNLOAD_HANDLERS": {
                 "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
                 "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
             },
+            "DOWNLOADER_MIDDLEWARES": {
+                'scrapy_proxy_pool.middlewares.ProxyPoolMiddleware': 610,
+                'scrapy_proxy_pool.middlewares.BanDetectionMiddleware': 620,
+                'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 110,
+            },
             "PLAYWRIGHT_PROCESS_REQUEST_HEADERS": custom_headers,
             "PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT": 0,
-            "LOG_LEVEL": "INFO",
+            "LOG_LEVEL": "DEBUG",
             "ROBOTSTXT_OBEY": False,
             "PLAYWRIGHT_LAUNCH_OPTIONS":{
-                "headless": False,
+                "headless": True,
                 "channel": "chrome",
             },
             "PLAYWRIGHT_CONTEXTS": {
@@ -73,11 +97,14 @@ class RealtorspiderSpider(scrapy.Spider):
         
         # for state in states:
         # for state in ['Alabama']:
-        #     url = f'https://www.realtor.com/{category_dict[self.category]}/{state}/pg-{self.page}'
+        # category = 'rent'
+        # page = random.randint(1, 5)
+        # state = random.choice(states).replace(' ', '-')
+        # url = f'https://www.realtor.com/{category_dict[category]}/{state}/pg-{page}'
         if 'realestateandhomes-detail' in url:
             self.logger.info('in property link = {}'.format(url))
             yield scrapy.Request(url,
-                headers=headers,)
+                headers=headers)
         else:
             self.logger.info('in state url = {}'.format(url))
             yield scrapy.Request(url,
@@ -94,7 +121,6 @@ class RealtorspiderSpider(scrapy.Spider):
     def parse_state(self, response):
         self.logger.info("Parse state function called on %s", response.url)
         soup = BeautifulSoup(response.text, 'html.parser')
-        page = response.meta["playwright_page"]
         data = json.loads(soup.css.select('script#__NEXT_DATA__')[0].text)
         try: 
             links = ['https://www.realtor.com/realestateandhomes-detail/{}/'.format(item['permalink']) for item in data['props']['pageProps']['properties']]
@@ -104,16 +130,25 @@ class RealtorspiderSpider(scrapy.Spider):
             except KeyError:
                 pass
             
-        for link in links:
-            self.logger.info('in property link = {}'.format(link))
-            yield scrapy.Request(link,
-                headers=headers,)
+        # for link in links:
+        self.logger.info('in property link = {}'.format(links[5]))
+        yield scrapy.Request(links[5],
+            headers=headers)
 
 
     def parse(self, response):
         self.logger.info("Parse property function called on %s", response.url)
         soup = BeautifulSoup(response.text, 'html.parser')
-        data = json.loads(soup.css.select('script#__NEXT_DATA__')[0].text)['props']['pageProps']['property']
+        try:
+            data = json.loads(soup.css.select('script#__NEXT_DATA__')[0].text)['props']['pageProps']['property']
+        except:
+            delay = 5
+            retry_url = response.request.url
+            self.logger.info(f"Retrying {retry_url} after {delay} seconds...")
+            time.sleep(delay)
+            yield scrapy.Request(url=retry_url, headers=headers, meta={'retry': True})
+            data = json.loads(soup.css.select('script#__NEXT_DATA__')[0].text)['props']['pageProps']['property']
+        print("data", data)
         if len(data['local']) > 1:
             pass
         if data['community']:
@@ -146,11 +181,8 @@ class RealtorspiderSpider(scrapy.Spider):
         #         self.logger.info('in agent link = {}'.format(advertiser['href']))
         #         yield scrapy.Request(f"https://www.realtor.com{advertiser['href']}",
         #         headers=headers,
-        #         callback=self.parse_agent,
-        #         meta=dict(
-        #         playwright = True,
-        #         playwright_include_page = True,
-        #     ))
+        #         callback=self.parse_agent,}
+        #         )
                 
         return data
     
@@ -199,3 +231,8 @@ class RealtorspiderSpider(scrapy.Spider):
 #                 configure_logging()
 #                 run_spider(RealtorspiderSpider, page=page, category=category)
 #         logging.info("finished")
+
+
+process = CrawlerProcess()
+process.crawl(RealtorspiderSpider)
+process.start()

@@ -16,6 +16,7 @@ def extract(value):
 
 class RealtorPipeline:
     def process_item(self, item, spider):
+        self.logger.info("saving property")
         property = Property.objects.create(
             flood_factor_score=extract(item['local']['flood']['flood_factor_score']),
             flood_fema_zone=extract(item['local']['flood']['femazone'][0]),

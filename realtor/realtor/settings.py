@@ -10,6 +10,7 @@ from pathlib import Path
 import random
 import os
 import sys
+import environ
 
 # DJANGO INTEGRATION
 
@@ -22,15 +23,16 @@ import django
 django.setup()
 
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.append(BASE_DIR)
 
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 BOT_NAME = "realtor"
 
-SPIDER_MODULES = ["realtor.realtor.spiders"]
+SPIDER_MODULES = ["realtor.realtor.spiders",]
 NEWSPIDER_MODULE = "realtor.spiders"
 
 # playwright
@@ -55,6 +57,13 @@ def custom_headers(browser_type, playwright_request, scrapy_headers):
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.2228.0 Safari/537.36',
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.3497.92 Safari/537.36',
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15',
     ]
     return {
         'User-Agent': random.choice(userAgentStrings),
@@ -107,9 +116,13 @@ DEFAULT_REQUEST_HEADERS = {
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    "realtor.middlewares.RealtorDownloaderMiddleware": 543,
-#}
+DOWNLOADER_MIDDLEWARES = {
+    'scrapy_proxy_pool.middlewares.ProxyPoolMiddleware': 610,
+    'scrapy_proxy_pool.middlewares.BanDetectionMiddleware': 620,
+    # "realtor.middlewares.RealtorDownloaderMiddleware": 543,
+    'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 110,
+}
+
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
