@@ -31,7 +31,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 BOT_NAME = "realtor"
 
-SPIDER_MODULES = ["realtor.realtor.spiders",]
+SPIDER_MODULES = ["realtor.spiders",]
 NEWSPIDER_MODULE = "realtor.spiders"
 
 # playwright
@@ -118,7 +118,7 @@ DEFAULT_REQUEST_HEADERS = {
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    # "realtor.middlewares.RealtorDownloaderMiddleware": 543,
+    "realtor.middlewares.RealtorDownloaderMiddleware": 543,
     'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 110,
 }
 
@@ -132,8 +132,8 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   "realtor.realtor.pipelines.PropertyPipeline": 300,
-   "realtor.realtor.pipelines.AgentPipeline": 400,
+   "realtor.pipelines.PropertyPipeline": 300,
+   "realtor.pipelines.AgentPipeline": 400,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

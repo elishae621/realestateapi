@@ -2,15 +2,6 @@ from django.db import models
 from autoslug import AutoSlugField
 
 
-# Property is grouped into the following:
-# Property information
-# location information
-# price infromation
-# details
-# features 
-# environmental factors 
-# agent & broker
-
 class Property(models.Model):
     class Meta:
         verbose_name = 'Property'
@@ -152,13 +143,13 @@ class PriceHistory(models.Model):
 class TaxHistory(models.Model):
     property = models.ForeignKey(Property, null=True, on_delete=models.CASCADE)
     year = models.IntegerField()
-    taxes = models.IntegerField()
-    land = models.IntegerField(null=True, blank=True)
-    additions = models.IntegerField(null=True, blank=True)
+    tax = models.IntegerField()
+    land = models.IntegerField()
+    building = models.CharField(max_length=20, null=True, blank=True)
     total = models.IntegerField()
 
     def __str__(self):
-        return f"TaxHistory: {self.property.name}"    
+        return f"TaxHistory: {self.year}"    
 
 class School(models.Model):
     name = models.CharField(max_length=50)

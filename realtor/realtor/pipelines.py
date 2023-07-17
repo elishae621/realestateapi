@@ -149,8 +149,8 @@ class PropertyPipeline:
                         property.utilities.add(models.ListItem.objects.create(name=element))
                         property.save()
                         
+        property.pricehistory_set.all().delete()
         for history in extract(propertyDetails, 'property_history', list=True):
-            property.pricehistory_set.all().delete()
             models.PriceHistory.objects.create(
                 date=extract(history, 'date', date=True),
                 event=extract(history, 'event_name'),
@@ -160,14 +160,14 @@ class PropertyPipeline:
                 property=property
             )
             
+        property.taxhistory_set.all().delete()
         for tax in extract(propertyDetails, 'tax_history', list=True):
-            property.taxhistory_set.all().delete()
             models.TaxHistory.objects.create(
                 year=extract(tax, 'year'),
-                taxes=extract(tax, 'taxes'),
-                land=extract(tax, 'land'),
-                additions=extract(tax, 'additions'),
-                total=extract(tax, 'total'),
+                tax=extract(tax, 'tax'),
+                land=extract(tax, 'assessment,land'),
+                building=extract(tax, 'assessment,building'),
+                total=extract(tax, 'assessment,total'),
                 property=property
             )
             
@@ -209,21 +209,21 @@ class PropertyPipeline:
                 review_count=extract(school, 'review_count'),
                 student_count=extract(school, 'student_count'),
             )
+            sch.education_levels.all().delete()
             for level in extract(school, 'education_levels', list=True):
-                sch.education_levels.all().delete()
                 sch.education_levels.add(models.ListItem.objects.create(name=level))
                 sch.save()
                 
+            sch.grads.all().delete()
             for grade in extract(school, 'grades', list=True):
-                sch.grads.all().delete()
                 sch.grades.add(models.ListItem.objects.create(name=grade))
                 sch.save()
             
             property.schools.add(sch)
             property.save()
             
+        property.tags.all().delete()
         for tag in extract(propertyDetails, 'tags', list=True):
-            property.tags.all().delete()
             property.tags.add(models.ListItem.objects.create(name=tag))
             property.save()
             
@@ -281,19 +281,19 @@ class AgentPipeline:
                 state_code=extract(area, 'state_code'),
                 agent=agent,
             )
-            
+        
+        agent.specializations.all().delete()
         for specialization in extract(agentDetails, 'specializations', list=True):
-            agent.specializations.all().delete()
             agent.specializations.add(models.ListItem.objects.create(name=extract(specialization, 'name')))
             agent.save()
             
+        agent.zips.all().delete()
         for zip in extract(agentDetails, 'zips', list=True):
-            agent.zips.all().delete()
             agent.zips.add(models.ListItem.objects.create(name=zip))
             agent.save()
 
+        agent.phones.all().delete()
         for phone in extract(agentDetails, 'phones', list=True):
-            agent.phones.all().delete()
             agent.phones.add(models.ListItem.objects.create(name=extract(phone, 'number')))
             agent.save()
         

@@ -106,6 +106,7 @@ class RealtorDownloaderMiddleware:
         # - return None: continue processing this exception
         # - return a Response object: stops process_exception() chain
         # - return a Request object: stops process_exception() chain
+        print("intercepting exception")
         pass
 
     def spider_opened(self, spider):
