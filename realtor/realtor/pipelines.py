@@ -40,8 +40,6 @@ class PropertyPipeline:
         property, created = models.Property.objects.get_or_create(
             address=extract(propertyDetails, 'location,address,line'),
             source_url=extract(propertyDetails, 'href'))
-        print("property filter ", models.Property.objects.filter(id=property.id))
-        print("flood factor severity ", extract(propertyDetails, 'local,flood,flood_trend'), propertyDetails['local']['flood'])
         property.flood_factor_severity=extract(propertyDetails, 'local,flood,flood_factor_severity')
         property.flood_factor_severity=extract(propertyDetails, 'local,flood,flood_factor_severity')
         property.flood_trend=extract(propertyDetails, 'local,flood,flood_trend')
@@ -265,19 +263,17 @@ class AgentPipeline:
             return item
         logging.info("saving agent")
             
-        agent, created = models.Agent.objects.get_or_create(agent_id=extract(agentDetails, 'advertiser_id'), 
-        name=extract(agentDetails, 'name'))
-        models.Agent.objects.filter(id=agent.id).update(
-            broker_address=extract(agentDetails, 'office,address,line'),
-            city=extract(agentDetails, 'office,address,city'),
-            postal_code=extract(agentDetails, 'office,address,postal_code'),
-            state_code=extract(agentDetails, 'office,address,state_code'),
-            country=extract(agentDetails, 'office,address,country'),
-            broker=extract(agentDetails, 'broker,name'),
-            description=extract(agentDetails, 'description'),
-            website=extract(agentDetails, 'href'),
-            last_updated=extract(agentDetails, 'last_updated', date=True),
-        )
+        agent, created = models.Agent.objects.get_or_create(agent_id=extract(agentDetails, 'advertiser_id'))
+        agent.broker_address=extract(agentDetails, 'office,address,line')
+        agent.city=extract(agentDetails, 'office,address,city')
+        agent.postal_code=extract(agentDetails, 'office,address,postal_code')
+        agent.state_code=extract(agentDetails, 'office,address,state_code')
+        agent.country=extract(agentDetails, 'office,address,country')
+        agent.broker=extract(agentDetails, 'broker,name')
+        agent.description=extract(agentDetails, 'description')
+        agent.website=extract(agentDetails, 'href')
+        agent.last_updated=extract(agentDetails, 'last_updated', date=True)
+        agent.save()
         
         for area in extract(agentDetails, 'served_areas', list=True):
             models.ServedAreas.objects.get_or_create(

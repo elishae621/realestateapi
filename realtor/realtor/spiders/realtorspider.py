@@ -66,37 +66,37 @@ class RealtorspiderSpider(scrapy.Spider):
             'buy': 'realestateandhomes-search',
             'rent': 'apartments'   
         }
-        url = "https://www.realtor.com/realestateandhomes-detail/7309-Azimuth-Ln_Sacramento_CA_95842_M29288-48779"
+        # url = "https://www.realtor.com/realestateandhomes-detail/7309-Azimuth-Ln_Sacramento_CA_95842_M29288-48779"
         # url = 'https://www.realtor.com/realestateandhomes-detail/1511-A-St-NE-Apt-1_Washington_DC_20002_M96274-98187'
         # url = "https://www.realtor.com/realestateagents/Tumi-Demuren_Washington_DC_1556450"
         # for state in states:
-        # for state in ['Alabama']:
-        # category = 'rent'
-        # page = random.randint(1, 5)
-        # state = random.choice(states).replace(' ', '-')
-        # url = f'https://www.realtor.com/{category_dict[category]}/{state}/pg-{page}'
-        if 'realestateandhomes-detail' in url:
-            self.logger.info('in property link = {}'.format(url))
-            yield scrapy.Request(url,
-                headers=headers, 
-                meta=meta)
-        elif 'realestateagents' in url:
-            self.logger.info('in agent page = {}'.format(url))
-            yield scrapy.Request(url,
-                callback=self.parse_agent,
-                headers=headers, meta=meta)
-        else:
-            self.logger.info('in state url = {}'.format(url))
-            yield scrapy.Request(url,
-                headers=headers,
-                callback=self.parse_state,
-                meta=dict(
-                playwright = True,
-                playwright_include_page = True,
-                playwright_page_coroutines = [
-                PageMethod("wait_for_selector", "div.result-list"),
-                ]
-            ))
+        for state in ['Alabama']:
+            category = 'rent'
+            page = random.randint(1, 2)
+            state = random.choice(states).replace(' ', '-')
+            url = f'https://www.realtor.com/{category_dict[category]}/{state}/pg-{page}'
+            if 'realestateandhomes-detail' in url:
+                self.logger.info('in property link = {}'.format(url))
+                yield scrapy.Request(url,
+                    headers=headers, 
+                    meta=meta)
+            elif 'realestateagents' in url:
+                self.logger.info('in agent page = {}'.format(url))
+                yield scrapy.Request(url,
+                    callback=self.parse_agent,
+                    headers=headers, meta=meta)
+            else:
+                self.logger.info('in state url = {}'.format(url))
+                yield scrapy.Request(url,
+                    headers=headers,
+                    callback=self.parse_state,
+                    meta=dict(
+                    playwright = True,
+                    playwright_include_page = True,
+                    playwright_page_coroutines = [
+                    PageMethod("wait_for_selector", "div.result-list"),
+                    ]
+                ))
 
     def parse_state(self, response):
         self.logger.info("Parse state function called on %s", response.url)
@@ -119,7 +119,6 @@ class RealtorspiderSpider(scrapy.Spider):
     def parse(self, response):
         self.logger.info("Parse property function called on %s", response.url)
         soup = BeautifulSoup(response.text, 'html.parser')
-        print("url", response.url)
         try:
             item = json.loads(soup.css.select('script#__NEXT_DATA__')[0].text)['props']['pageProps']['property']
         except:

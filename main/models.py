@@ -65,7 +65,7 @@ class Property(models.Model):
     tags = models.ManyToManyField('main.ListItem', related_name="tag")
     unit_count = models.IntegerField(null=True, blank=True)
     baths = models.IntegerField(null=True, blank=True)
-    baths_consolidated = models.IntegerField(null=True, blank=True)
+    baths_consolidated = models.DecimalField(decimal_places=1, max_digits=3, null=True, blank=True)
     baths_full = models.IntegerField(null=True, blank=True)
     baths_3qtr = models.IntegerField(null=True, blank=True)
     baths_half = models.IntegerField(null=True, blank=True)
