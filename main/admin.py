@@ -13,6 +13,8 @@ class PriceHistoryAdmin(admin.StackedInline):
 class TaxHistoryAdmin(admin.StackedInline):
     model = models.TaxHistory
     
+class ServedAreasAdmin(admin.StackedInline):
+    model = models.ServedAreas
 
 class ImageAdmin(admin.StackedInline):
     model = models.Image
@@ -29,3 +31,7 @@ class PropertyAdmin(admin.ModelAdmin):
 @admin.register(models.Image)
 class ImageMainAdmin(admin.ModelAdmin):
     inlines = [ImageTagAdmin,]
+
+@admin.register(models.Agent)
+class AgentAdmin(admin.ModelAdmin):
+    inlines = [ServedAreasAdmin,]

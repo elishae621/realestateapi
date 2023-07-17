@@ -15,10 +15,9 @@ import environ
 # DJANGO INTEGRATION
 
 sys.path.append(os.path.dirname(os.path.abspath('.')))
-# Do not forget the change realtor part based on your project name
 os.environ['DJANGO_SETTINGS_MODULE'] = 'realestateapi.settings'
+os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
-# This is required only if Django Version > 1.8
 import django
 django.setup()
 
@@ -131,7 +130,8 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   "realtor.realtor.pipelines.RealtorPipeline": 300,
+   "realtor.realtor.pipelines.PropertyPipeline": 300,
+   "realtor.realtor.pipelines.AgentPipeline": 400,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

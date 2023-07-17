@@ -17,7 +17,7 @@ class Property(models.Model):
         verbose_name_plural = 'Properties'
         
     address = models.TextField(null=True, blank=True)
-    slug = AutoSlugField(populate_from='address', unique_with=['pk'])
+    slug = AutoSlugField(populate_from='address', unique_with=['state_code', 'postal_code'])
     source_url = models.URLField(max_length=200, null=True, blank=True)
     agent = models.ForeignKey('main.Agent', null=True, blank=True, on_delete=models.CASCADE)
     primary_photo = models.URLField(max_length=200, null=True, blank=True)
@@ -102,6 +102,9 @@ class Property(models.Model):
 
 class ListItem(models.Model):
     name = models.CharField(max_length=200)
+    
+    def __str__(self):
+        return self.name
 
 class Flags(models.Model):
     property = models.OneToOneField(Property, on_delete=models.CASCADE)
@@ -117,6 +120,9 @@ class Flags(models.Model):
     is_price_excludes_land = models.BooleanField(null=True)
     is_subdivision = models.BooleanField(null=True)
     is_coming_soon = models.BooleanField(null=True)
+    
+    def __str__(self):
+        return f"Flag: {self.property.slug}"
 
 class Neighborhood(models.Model):
     area = models.CharField(max_length=50, null=True, blank=True)
@@ -126,7 +132,10 @@ class Neighborhood(models.Model):
     median_days_on_market = models.IntegerField(null=True, blank=True)
     median_price_per_sqft = models.IntegerField(null=True, blank=True)
     nearby_neighborhoods = models.ManyToManyField('main.Neighborhood')
+    hot_market_badge = models.CharField(max_length=50, null=True, blank=True, unique=True)
     
+    def __str__(self):
+        return self.local_url
 
 class PriceHistory(models.Model):
     property = models.ForeignKey(Property, null=True, on_delete=models.CASCADE)
@@ -136,6 +145,8 @@ class PriceHistory(models.Model):
     price_sqft = models.IntegerField(null=True, blank=True)
     source = models.CharField(max_length=20, null=True, blank=True)
 
+    def __str__(self):
+        return f"PriceHistory: {self.property.name}"
 class TaxHistory(models.Model):
     property = models.ForeignKey(Property, null=True, on_delete=models.CASCADE)
     year = models.IntegerField(null=True, blank=True)
@@ -143,6 +154,9 @@ class TaxHistory(models.Model):
     land = models.IntegerField(null=True, blank=True)
     additions = models.IntegerField(null=True, blank=True)
     total = models.IntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return f"TaxHistory: {self.property.name}"    
 
 class School(models.Model):
     name = models.CharField(max_length=50, null=True, blank=True)
@@ -160,6 +174,8 @@ class School(models.Model):
     review_count = models.IntegerField(null=True, blank=True)
     parent_rating = models.IntegerField(null=True, blank=True)
 
+    def __str__(self):
+        return self.name
 
 class Agent(models.Model):
     agent_id = models.CharField(max_length=20, null=True, blank=True, unique=True)
@@ -171,6 +187,7 @@ class Agent(models.Model):
     phones = models.ManyToManyField('main.ListItem', related_name='phone')
     description = models.TextField(null=True, blank=True)
     specializations = models.ManyToManyField('main.ListItem', related_name='specialization')
+    zips = models.ManyToManyField('main.ListItem', related_name='zip')
     languages = models.CharField(max_length=50, null=True, blank=True)
     website = models.URLField(max_length=200, null=True, blank=True)
     broker = models.CharField(max_length=50, null=True, blank=True)
@@ -178,10 +195,16 @@ class Agent(models.Model):
     website = models.URLField(max_length=200, null=True, blank=True)
     last_updated = models.DateTimeField(null=True, blank=True)
     
+    def __str__(self):
+        return self.name if self.name else self.agent_id
+    
 class ServedAreas(models.Model):
     name = models.CharField(max_length=20, null=True, blank=True)
     state_code = models.CharField(max_length=5, null=True, blank=True)
     agent = models.ForeignKey(Agent, null=True, blank=True, on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return self.name
 
 class Image(models.Model):
     property = models.ForeignKey(Property, null=True, blank=True, on_delete=models.CASCADE)
