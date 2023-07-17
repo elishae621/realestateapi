@@ -17,7 +17,6 @@ sys.path.append(BASE_DIR)
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-PROXY_URL = env('PROXY_URL')
 class RealtorspiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the
@@ -111,9 +110,3 @@ class RealtorDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info("Spider opened: %s" % spider.name)
-
-
-class ProxyMiddleware:
-    def process_request(self, request, spider):
-        request.meta['proxy'] = PROXY_URL
-
