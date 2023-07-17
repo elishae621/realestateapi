@@ -120,6 +120,8 @@ class Flags(models.Model):
     is_price_excludes_land = models.BooleanField(null=True)
     is_subdivision = models.BooleanField(null=True)
     is_coming_soon = models.BooleanField(null=True)
+    is_for_rent = models.BooleanField(null=True)
+    is_garage_present = models.BooleanField(null=True)
     
     def __str__(self):
         return f"Flag: {self.property.slug}"

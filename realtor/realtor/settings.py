@@ -78,6 +78,8 @@ PLAYWRIGHT_CONTEXTS = {
                 }
             }
 
+LOG_LEVEL = 'INFO'
+
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = "realtor (+http://www.yourdomain.com)"
 

@@ -13,7 +13,7 @@ from decimal import Decimal
 import json
 import logging
 
-def extract(item, filters, date=False, image=False, decimal=False):
+def extract(item, filters, date=False, image=False, decimal=False, list=False):
     filters_list = filters.split(",")
     value = item
     try:
@@ -21,13 +21,15 @@ def extract(item, filters, date=False, image=False, decimal=False):
             value = value[filters_list[0]]
             filters_list.pop(0)
     except KeyError:
-        return None
+        return None if not list else []
     if value and image:
         value.replace('.jpg', '-w480_h360_x2.jpg')
     if value and decimal:
         value = Decimal(value)
     if value and date:
         value = parse(value)
+    if value == None and list:
+        return []
     return value
 
 class PropertyPipeline:
@@ -103,52 +105,52 @@ class PropertyPipeline:
         )
             
         models.Image.objects.filter(property=property).delete()
-        for photo in extract(propertyDetails, 'photos'):
+        for photo in extract(propertyDetails, 'photos', list=True):
             image = models.Image.objects.create(
                 property=property,
                 image=extract(photo, 'href').replace('.jpg', '-w480_h360_x2.jpg')
             )
             models.ImageTag.objects.filter(image=image).delete()
-            for tag in extract(photo, 'tags'):
+            for tag in extract(photo, 'tags', list=True):
                 models.ImageTag.objects.create(
                     image=image,
                     label=extract(tag, 'label'),
                     probability=extract(tag, 'probability')
                 )
                 
-        for detail in extract(propertyDetails, 'details'):
+        for detail in extract(propertyDetails, 'details', list=True):
             if extract(detail, 'category') == "Waterfront and Water Access": 
-                for element in extract(detail, 'text'):
+                for element in extract(detail, 'text', list=True):
                     if not property.waterfront_water_access.filter(name=element):
                         property.waterfront_water_access.add(models.ListItem.objects.create(name=element))
                         property.save()
             if extract(detail, 'category') == "Land Info": 
-                for element in extract(detail, 'text'):
+                for element in extract(detail, 'text', list=True):
                     if not property.land_info.filter(name=element):
                         property.land_info.add(models.ListItem.objects.create(name=element))
                         property.save()
             if extract(detail, 'category') == "School Information": 
-                for element in extract(detail, 'text'):
+                for element in extract(detail, 'text', list=True):
                     if not property.school_information.filter(name=element):
                         property.school_information.add(models.ListItem.objects.create(name=element))
                         property.save()
             if extract(detail, 'category') == "Homeowners Association": 
-                for element in extract(detail, 'text'):
+                for element in extract(detail, 'text', list=True):
                     if not property.hoa.filter(name=element):
                         property.hoa.add(models.ListItem.objects.create(name=element))
                         property.save()
             if extract(detail, 'category') == "Other Property Info": 
-                for element in extract(detail, 'text'):
+                for element in extract(detail, 'text', list=True):
                     if not property.other_property_info.filter(name=element):
                         property.other_property_info.add(models.ListItem.objects.create(name=element))
                         property.save()
             if extract(detail, 'category') == "Utilities": 
-                for element in extract(detail, 'text'):
+                for element in extract(detail, 'text', list=True):
                     if not property.utilities.filter(name=element):
                         property.utilities.add(models.ListItem.objects.create(name=element))
                         property.save()
                         
-        for history in extract(propertyDetails, 'property_history'):
+        for history in extract(propertyDetails, 'property_history', list=True):
             property.pricehistory_set.all().delete()
             models.PriceHistory.objects.create(
                 date=extract(history, 'date', date=True),
@@ -159,7 +161,7 @@ class PropertyPipeline:
                 property=property
             )
             
-        for tax in extract(propertyDetails, 'tax_history'):
+        for tax in extract(propertyDetails, 'tax_history', list=True):
             property.taxhistory_set.all().delete()
             models.TaxHistory.objects.create(
                 year=extract(tax, 'year'),
@@ -181,7 +183,7 @@ class PropertyPipeline:
                 hot_market_badge=extract(propertyDetails, 'neighborhood,hot_market_badge'),
             )
         
-            for nbh in extract(propertyDetails, 'nearby_neighborhoods'):
+            for nbh in extract(propertyDetails, 'nearby_neighborhoods', list=True):
                 nearby_nbh, created = models.Neighborhood.objects.get_or_create(local_url=extract(nbh, 'local_url'))
                 models.Neighborhood.objects.filter(local_url=nearby_nbh.local_url).update(
                     area=extract(nbh, 'area'),
@@ -192,7 +194,7 @@ class PropertyPipeline:
                 neighborhood.save()
 
             
-        for school in extract(propertyDetails, 'school'):
+        for school in extract(propertyDetails, 'school', list=True):
             sch = models.School.objects.get_or_create(
                 longitude=extract(school, 'coordinate,lon', decimal=True),
                 latitude=extract(school, 'coordinate,lat', decimal=True),
@@ -208,12 +210,12 @@ class PropertyPipeline:
                 review_count=extract(school, 'review_count'),
                 student_count=extract(school, 'student_count'),
             )
-            for level in extract(school, 'education_levels'):
+            for level in extract(school, 'education_levels', list=True):
                 sch.education_levels.all().delete()
                 sch.education_levels.add(models.ListItem.objects.create(name=level))
                 sch.save()
                 
-            for grade in extract(school, 'grades'):
+            for grade in extract(school, 'grades', list=True):
                 sch.grads.all().delete()
                 sch.grades.add(models.ListItem.objects.create(name=grade))
                 sch.save()
@@ -221,12 +223,12 @@ class PropertyPipeline:
             property.schools.add(sch)
             property.save()
             
-        for tag in extract(propertyDetails, 'tags'):
+        for tag in extract(propertyDetails, 'tags', list=True):
             property.tags.all().delete()
-            property.tags.add(models.ListItem.objects.create(name=extract(tag)))
+            property.tags.add(models.ListItem.objects.create(name=tag))
             property.save()
             
-        flag = models.Flags.objects.get_or_create(
+        flag, created = models.Flags.objects.get_or_create(
             property=property
         )
         models.Flags.objects.filter(id=flag.id).update(
@@ -245,7 +247,7 @@ class PropertyPipeline:
             is_subdivision=extract(propertyDetails, 'flags,is_subdivision'),
             is_coming_soon=extract(propertyDetails, 'flags,is_coming_soon'),    
         )
-        for advertiser in extract(propertyDetails, 'consumer_advertisers'):
+        for advertiser in extract(propertyDetails, 'consumer_advertisers', list=True):
             if extract(advertiser, 'type') == 'Agent':
                 agent, created = models.Agent.objects.get_or_create(
                     agent_id=extract(advertiser, 'agent_id'),
@@ -275,24 +277,24 @@ class AgentPipeline:
             last_updated=extract(agentDetails, 'last_updated', date=True),
         )
         
-        for area in extract(agentDetails, 'served_areas'):
+        for area in extract(agentDetails, 'served_areas', list=True):
             models.ServedAreas.objects.get_or_create(
                 name=extract(area, 'name'),
                 state_code=extract(area, 'state_code'),
                 agent=agent,
             )
             
-        for specialization in extract(agentDetails, 'specializations'):
+        for specialization in extract(agentDetails, 'specializations', list=True):
             agent.specializations.all().delete()
             agent.specializations.add(models.ListagentDetails.objects.create(name=extract(specialization, 'name')))
             agent.save()
             
-        for zip in extract(agentDetails, 'zips'):
+        for zip in extract(agentDetails, 'zips', list=True):
             agent.zips.all().delete()
             agent.zips.add(models.ListagentDetails.objects.create(name=zip))
             agent.save()
 
-        for phone in extract(agentDetails, 'phones'):
+        for phone in extract(agentDetails, 'phones', list=True):
             agent.phones.all().delete()
             agent.phones.add(models.ListagentDetails.objects.create(name=extract(phone, 'number')))
             agent.save()
