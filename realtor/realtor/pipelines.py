@@ -42,70 +42,68 @@ class PropertyPipeline:
             source_url=extract(propertyDetails, 'href'))
         print("property filter ", models.Property.objects.filter(id=property.id))
         print("flood factor severity ", extract(propertyDetails, 'local,flood,flood_trend'), propertyDetails['local']['flood'])
-        property.flood_factor_severity=extract(propertyDetails, 'local,flood,flood_factor_severity'),
+        property.flood_factor_severity=extract(propertyDetails, 'local,flood,flood_factor_severity')
+        property.flood_factor_severity=extract(propertyDetails, 'local,flood,flood_factor_severity')
+        property.flood_trend=extract(propertyDetails, 'local,flood,flood_trend')
+        property.fire_factor_severity=extract(propertyDetails, 'local,wildfire,fire_factor_severity')
+        property.fire_trend=extract(propertyDetails, 'local,wildfire,fire_trend')
+        property.status=extract(propertyDetails, 'status')
+        property.coming_soon_date=extract(propertyDetails, 'coming_soon_date', date=True)
+        property.list_price=extract(propertyDetails, 'list_price')
+        property.last_price_change_amount=extract(propertyDetails, 'last_price_change_amount')
+        property.last_sold_date=extract(propertyDetails, 'last_sold_date', date=True)
+        property.last_sold_price=extract(propertyDetails, 'last_sold_price')
+        property.price_per_sqft=extract(propertyDetails, 'price_per_sqft')
+        property.list_date=extract(propertyDetails, 'list_date', date=True)
+        property.street_view_url=extract(propertyDetails, 'location,address,street_view_url')
+        property.street_view_metadata_url=extract(propertyDetails, 'location,address,street_view_metadata_url')
+        property.street_number=extract(propertyDetails, 'location,address,street_number')
+        property.street_direction=extract(propertyDetails, 'location,address,street_direction')
+        property.street_name=extract(propertyDetails, 'location,address,street_name')
+        property.street_suffix=extract(propertyDetails, 'location,address,street_suffix')
+        property.street_post_direction=extract(propertyDetails, 'location,address,street_post_direction')
+        property.unit=extract(propertyDetails, 'location,address,unit')
+        property.county=extract(propertyDetails, 'location,county,name')
+        property.city=extract(propertyDetails, 'location,address,city')
+        property.state_code=extract(propertyDetails, 'location,address,state_code')
+        property.postal_code=extract(propertyDetails, 'location,address,postal_code')
+        property.country=extract(propertyDetails, 'location,address,country')
+        property.validation_code=extract(propertyDetails, 'location,address,validation_code')
+        property.state=extract(propertyDetails, 'location,address,state')
+        property.latitude=extract(propertyDetails, 'location,address,coordinate,lat', decimal=True)
+        property.longitude=extract(propertyDetails, 'location,address,coordinate,lon', decimal=True)
+        property.driving_directions=extract(propertyDetails, 'location,driving_directions')
+        property.builder=extract(propertyDetails, 'builder')
+        property.baths=extract(propertyDetails, 'description,baths')
+        property.baths_consolidated=extract(propertyDetails, 'description,baths_consolidated')
+        property.baths_full=extract(propertyDetails, 'description,baths_full')
+        property.baths_3qtr=extract(propertyDetails, 'description,baths_3qtr')
+        property.baths_half=extract(propertyDetails, 'description,baths_half')
+        property.baths_total=extract(propertyDetails, 'description,baths_total')
+        property.beds=extract(propertyDetails, 'description,beds')
+        property.construction=extract(propertyDetails, 'description,construction')
+        property.cooling=extract(propertyDetails, 'description,cooling')
+        property.exterior=extract(propertyDetails, 'description,exterior')
+        property.fireplace=extract(propertyDetails, 'description,fireplace')
+        property.garage=extract(propertyDetails, 'description,garage')
+        property.garage_type=extract(propertyDetails, 'description,garage_type')
+        property.heating=extract(propertyDetails, 'description,heating')
+        property.roofing=extract(propertyDetails, 'description,roofing')
+        property.pool=extract(propertyDetails, 'description,pool')
+        property.sqft=extract(propertyDetails, 'description,sqft')
+        property.lot_sqft=extract(propertyDetails, 'description,lot_sqft')
+        property.rooms=extract(propertyDetails, 'description,rooms')
+        property.stories=extract(propertyDetails, 'description,stories')
+        property.sub_type=extract(propertyDetails, 'description,sub_type')
+        property.text=extract(propertyDetails, 'description,text')
+        property.type=extract(propertyDetails, 'description,type')
+        property.units=extract(propertyDetails, 'description,units')
+        property.year_built=extract(propertyDetails, 'description,year_built')
+        property.year_renovated=extract(propertyDetails, 'description,year_renovated')
+        property.zoning=extract(propertyDetails, 'description,zoning')
+        property.name=extract(propertyDetails, 'description,name')
+        property.primary_photo=extract(propertyDetails, 'primary_photo,href', image=True)
         property.save()
-        models.Property.objects.filter(id=property.id).update(
-            flood_factor_severity=extract(propertyDetails, 'local,flood,flood_factor_severity'),
-            flood_trend=extract(propertyDetails, 'local,flood,flood_trend'),
-            fire_factor_severity=extract(propertyDetails, 'local,wildfire,fire_factor_severity'),
-            fire_trend=extract(propertyDetails, 'local,wildfire,fire_trend'),
-            status=extract(propertyDetails, 'status'),
-            coming_soon_date=extract(propertyDetails, 'coming_soon_date', date=True),
-            list_price=extract(propertyDetails, 'list_price'),
-            last_price_change_amount=extract(propertyDetails, 'last_price_change_amount'),
-            last_sold_date=extract(propertyDetails, 'last_sold_date', date=True),
-            last_sold_price=extract(propertyDetails, 'last_sold_price'),
-            price_per_sqft=extract(propertyDetails, 'price_per_sqft'),
-            list_date=extract(propertyDetails, 'list_date', date=True),
-            street_view_url=extract(propertyDetails, 'location,address,street_view_url'),
-            street_view_metadata_url=extract(propertyDetails, 'location,address,street_view_metadata_url'),
-            street_number=extract(propertyDetails, 'location,address,street_number'),
-            street_direction=extract(propertyDetails, 'location,address,street_direction'),
-            street_name=extract(propertyDetails, 'location,address,street_name'),
-            street_suffix=extract(propertyDetails, 'location,address,street_suffix'),
-            street_post_direction=extract(propertyDetails, 'location,address,street_post_direction'),
-            unit=extract(propertyDetails, 'location,address,unit'),
-            county=extract(propertyDetails, 'location,county,name'),
-            city=extract(propertyDetails, 'location,address,city'),
-            state_code=extract(propertyDetails, 'location,address,state_code'),
-            postal_code=extract(propertyDetails, 'location,address,postal_code'),
-            country=extract(propertyDetails, 'location,address,country'),
-            validation_code=extract(propertyDetails, 'location,address,validation_code'),
-            state=extract(propertyDetails, 'location,address,state'),
-            latitude=extract(propertyDetails, 'location,address,coordinate,lat', decimal=True),
-            longitude=extract(propertyDetails, 'location,address,coordinate,lon', decimal=True),
-            driving_directions=extract(propertyDetails, 'location,driving_directions'),
-            builder=extract(propertyDetails, 'builder'),
-            baths=extract(propertyDetails, 'description,baths'),
-            baths_consolidated=extract(propertyDetails, 'description,baths_consolidated'),
-            baths_full=extract(propertyDetails, 'description,baths_full'),
-            baths_3qtr=extract(propertyDetails, 'description,baths_3qtr'),
-            baths_half=extract(propertyDetails, 'description,baths_half'),
-            baths_total=extract(propertyDetails, 'description,baths_total'),
-            beds=extract(propertyDetails, 'description,beds'),
-            construction=extract(propertyDetails, 'description,construction'),
-            cooling=extract(propertyDetails, 'description,cooling'),
-            exterior=extract(propertyDetails, 'description,exterior'),
-            fireplace=extract(propertyDetails, 'description,fireplace'),
-            garage=extract(propertyDetails, 'description,garage'),
-            garage_type=extract(propertyDetails, 'description,garage_type'),
-            heating=extract(propertyDetails, 'description,heating'),
-            roofing=extract(propertyDetails, 'description,roofing'),
-            pool=extract(propertyDetails, 'description,pool'),
-            sqft=extract(propertyDetails, 'description,sqft'),
-            lot_sqft=extract(propertyDetails, 'description,lot_sqft'),
-            rooms=extract(propertyDetails, 'description,rooms'),
-            stories=extract(propertyDetails, 'description,stories'),
-            sub_type=extract(propertyDetails, 'description,sub_type'),
-            text=extract(propertyDetails, 'description,text'),
-            type=extract(propertyDetails, 'description,type'),
-            units=extract(propertyDetails, 'description,units'),
-            year_built=extract(propertyDetails, 'description,year_built'),
-            year_renovated=extract(propertyDetails, 'description,year_renovated'),
-            zoning=extract(propertyDetails, 'description,zoning'),
-            name=extract(propertyDetails, 'description,name'),
-            primary_photo=extract(propertyDetails, 'primary_photo,href', image=True)
-        )
             
         models.Image.objects.filter(property=property).delete()
         for photo in extract(propertyDetails, 'photos', list=True):
@@ -266,7 +264,9 @@ class AgentPipeline:
         if not agentDetails:
             return item
         logging.info("saving agent")
-        agent, created = models.Agent.objects.get_or_create(agent_id=extract(agentDetails, 'advertiser_id'))
+            
+        agent, created = models.Agent.objects.get_or_create(agent_id=extract(agentDetails, 'advertiser_id'), 
+        name=extract(agentDetails, 'name'))
         models.Agent.objects.filter(id=agent.id).update(
             broker_address=extract(agentDetails, 'office,address,line'),
             city=extract(agentDetails, 'office,address,city'),
@@ -276,7 +276,6 @@ class AgentPipeline:
             broker=extract(agentDetails, 'broker,name'),
             description=extract(agentDetails, 'description'),
             website=extract(agentDetails, 'href'),
-            name=extract(agentDetails, 'name'),
             last_updated=extract(agentDetails, 'last_updated', date=True),
         )
         

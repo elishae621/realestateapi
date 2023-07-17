@@ -66,8 +66,8 @@ class RealtorspiderSpider(scrapy.Spider):
             'buy': 'realestateandhomes-search',
             'rent': 'apartments'   
         }
-        # https://www.realtor.com/realestateandhomes-detail/7309-Azimuth-Ln_Sacramento_CA_95842_M29288-48779
-        url = 'https://www.realtor.com/realestateandhomes-detail/1511-A-St-NE-Apt-1_Washington_DC_20002_M96274-98187'
+        url = "https://www.realtor.com/realestateandhomes-detail/7309-Azimuth-Ln_Sacramento_CA_95842_M29288-48779"
+        # url = 'https://www.realtor.com/realestateandhomes-detail/1511-A-St-NE-Apt-1_Washington_DC_20002_M96274-98187'
         # url = "https://www.realtor.com/realestateagents/Tumi-Demuren_Washington_DC_1556450"
         # for state in states:
         # for state in ['Alabama']:
@@ -78,7 +78,8 @@ class RealtorspiderSpider(scrapy.Spider):
         if 'realestateandhomes-detail' in url:
             self.logger.info('in property link = {}'.format(url))
             yield scrapy.Request(url,
-                headers=headers, meta=meta)
+                headers=headers, 
+                meta=meta)
         elif 'realestateagents' in url:
             self.logger.info('in agent page = {}'.format(url))
             yield scrapy.Request(url,
