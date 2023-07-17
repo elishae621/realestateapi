@@ -15,22 +15,21 @@ import logging
 
 def extract(item, filters, date=False, image=False, decimal=False, list=False):
     filters_list = filters.split(",")
-    value = item
     try:
-        while filters_list and value:
-            value = value[filters_list[0]]
+        while filters_list and item:
+            item = item[filters_list[0]]
             filters_list.pop(0)
     except KeyError:
         return None if not list else []
-    if value and image:
-        value.replace('.jpg', '-w480_h360_x2.jpg')
-    if value and decimal:
-        value = Decimal(value)
-    if value and date:
-        value = parse(value)
-    if value == None and list:
+    if item and image:
+        item.replace('.jpg', '-w480_h360_x2.jpg')
+    if item and decimal:
+        item = Decimal(item)
+    if item and date:
+        item = parse(item)
+    if item == None and list:
         return []
-    return value
+    return item
 
 class PropertyPipeline:
     def process_item(self, item, spider):
@@ -39,7 +38,12 @@ class PropertyPipeline:
             return item
         logging.info("saving property")
         property, created = models.Property.objects.get_or_create(
+            address=extract(propertyDetails, 'location,address,line'),
             source_url=extract(propertyDetails, 'href'))
+        print("property filter ", models.Property.objects.filter(id=property.id))
+        print("flood factor severity ", extract(propertyDetails, 'local,flood,flood_trend'), propertyDetails['local']['flood'])
+        property.flood_factor_severity=extract(propertyDetails, 'local,flood,flood_factor_severity'),
+        property.save()
         models.Property.objects.filter(id=property.id).update(
             flood_factor_severity=extract(propertyDetails, 'local,flood,flood_factor_severity'),
             flood_trend=extract(propertyDetails, 'local,flood,flood_trend'),
@@ -53,7 +57,6 @@ class PropertyPipeline:
             last_sold_price=extract(propertyDetails, 'last_sold_price'),
             price_per_sqft=extract(propertyDetails, 'price_per_sqft'),
             list_date=extract(propertyDetails, 'list_date', date=True),
-            address=extract(propertyDetails, 'location,address,line'),
             street_view_url=extract(propertyDetails, 'location,address,street_view_url'),
             street_view_metadata_url=extract(propertyDetails, 'location,address,street_view_metadata_url'),
             street_number=extract(propertyDetails, 'location,address,street_number'),
@@ -255,7 +258,7 @@ class PropertyPipeline:
                 property.agent = agent
                 property.save()
                 
-        return propertyDetails
+        return item
 
 class AgentPipeline:
     def process_item(self, item, spider):
@@ -286,17 +289,17 @@ class AgentPipeline:
             
         for specialization in extract(agentDetails, 'specializations', list=True):
             agent.specializations.all().delete()
-            agent.specializations.add(models.ListagentDetails.objects.create(name=extract(specialization, 'name')))
+            agent.specializations.add(models.ListItem.objects.create(name=extract(specialization, 'name')))
             agent.save()
             
         for zip in extract(agentDetails, 'zips', list=True):
             agent.zips.all().delete()
-            agent.zips.add(models.ListagentDetails.objects.create(name=zip))
+            agent.zips.add(models.ListItem.objects.create(name=zip))
             agent.save()
 
         for phone in extract(agentDetails, 'phones', list=True):
             agent.phones.all().delete()
-            agent.phones.add(models.ListagentDetails.objects.create(name=extract(phone, 'number')))
+            agent.phones.add(models.ListItem.objects.create(name=extract(phone, 'number')))
             agent.save()
         
-        return agent 
+        return item 

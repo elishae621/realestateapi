@@ -16,9 +16,9 @@ class Property(models.Model):
         verbose_name = 'Property'
         verbose_name_plural = 'Properties'
         
-    address = models.TextField(null=True, blank=True)
+    address = models.TextField()
     slug = AutoSlugField(populate_from='address', unique_with=['state_code', 'postal_code'])
-    source_url = models.URLField(max_length=200, null=True, blank=True)
+    source_url = models.URLField(max_length=200)
     agent = models.ForeignKey('main.Agent', null=True, blank=True, on_delete=models.CASCADE)
     primary_photo = models.URLField(max_length=200, null=True, blank=True)
     Neighborhood = models.ForeignKey('main.Neighborhood', null=True, blank=True, on_delete=models.CASCADE)
@@ -127,8 +127,8 @@ class Flags(models.Model):
         return f"Flag: {self.property.slug}"
 
 class Neighborhood(models.Model):
-    area = models.CharField(max_length=50, null=True, blank=True)
-    local_url = models.CharField(max_length=50, null=True, blank=True, unique=True)
+    area = models.CharField(max_length=50)
+    local_url = models.CharField(max_length=50, unique=True)
     median_listing_price = models.IntegerField(null=True, blank=True)
     median_sold_price = models.IntegerField(null=True, blank=True)
     median_days_on_market = models.IntegerField(null=True, blank=True)
@@ -141,27 +141,27 @@ class Neighborhood(models.Model):
 
 class PriceHistory(models.Model):
     property = models.ForeignKey(Property, null=True, on_delete=models.CASCADE)
-    date = models.DateField(null=True, blank=True)
-    event = models.CharField(max_length=20, null=True, blank=True)
-    price = models.IntegerField(null=True, blank=True)
+    date = models.DateField()
+    event = models.CharField(max_length=20)
+    price = models.IntegerField()
     price_sqft = models.IntegerField(null=True, blank=True)
-    source = models.CharField(max_length=20, null=True, blank=True)
+    source = models.CharField(max_length=20)
 
     def __str__(self):
         return f"PriceHistory: {self.property.name}"
 class TaxHistory(models.Model):
     property = models.ForeignKey(Property, null=True, on_delete=models.CASCADE)
-    year = models.IntegerField(null=True, blank=True)
-    taxes = models.IntegerField(null=True, blank=True)
+    year = models.IntegerField()
+    taxes = models.IntegerField()
     land = models.IntegerField(null=True, blank=True)
     additions = models.IntegerField(null=True, blank=True)
-    total = models.IntegerField(null=True, blank=True)
+    total = models.IntegerField()
 
     def __str__(self):
         return f"TaxHistory: {self.property.name}"    
 
 class School(models.Model):
-    name = models.CharField(max_length=50, null=True, blank=True)
+    name = models.CharField(max_length=50)
     latitude = models.DecimalField(decimal_places=6, max_digits=10, null=True, blank=True)
     longitude = models.DecimalField(decimal_places=6, max_digits=10, null=True, blank=True)
     education_levels = models.ManyToManyField('main.ListItem', related_name='level')
@@ -180,7 +180,7 @@ class School(models.Model):
         return self.name
 
 class Agent(models.Model):
-    agent_id = models.CharField(max_length=20, null=True, blank=True, unique=True)
+    agent_id = models.CharField(max_length=20, unique=True)
     city = models.CharField(max_length=20, null=True, blank=True)
     postal_code = models.CharField(max_length=10, null=True, blank=True)
     state_code = models.CharField(max_length=5, null=True, blank=True)
@@ -190,7 +190,6 @@ class Agent(models.Model):
     description = models.TextField(null=True, blank=True)
     specializations = models.ManyToManyField('main.ListItem', related_name='specialization')
     zips = models.ManyToManyField('main.ListItem', related_name='zip')
-    languages = models.CharField(max_length=50, null=True, blank=True)
     website = models.URLField(max_length=200, null=True, blank=True)
     broker = models.CharField(max_length=50, null=True, blank=True)
     broker_address = models.CharField(max_length=20, null=True, blank=True)
@@ -201,21 +200,21 @@ class Agent(models.Model):
         return self.name if self.name else self.agent_id
     
 class ServedAreas(models.Model):
-    name = models.CharField(max_length=20, null=True, blank=True)
-    state_code = models.CharField(max_length=5, null=True, blank=True)
-    agent = models.ForeignKey(Agent, null=True, blank=True, on_delete=models.CASCADE)
+    name = models.CharField(max_length=20)
+    state_code = models.CharField(max_length=5)
+    agent = models.ForeignKey(Agent, on_delete=models.CASCADE)
     
     def __str__(self):
         return self.name
 
 class Image(models.Model):
-    property = models.ForeignKey(Property, null=True, blank=True, on_delete=models.CASCADE)
-    image = models.URLField(max_length=200, null=True, blank=True)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    image = models.URLField(max_length=200)
     
     def __str__(self):
         return '{} - {}'.format(self.property.slug, self.image)
 
 class ImageTag(models.Model):
-    image = models.ForeignKey(Image, null=True, blank=True, on_delete=models.CASCADE)
-    label = models.CharField(max_length=20, null=True, blank=True)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE)
+    label = models.CharField(max_length=20)
     probability = models.DecimalField(decimal_places=20, max_digits=25, null=True, blank=True)

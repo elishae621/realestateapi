@@ -118,6 +118,7 @@ class RealtorspiderSpider(scrapy.Spider):
     def parse(self, response):
         self.logger.info("Parse property function called on %s", response.url)
         soup = BeautifulSoup(response.text, 'html.parser')
+        print("url", response.url)
         try:
             item = json.loads(soup.css.select('script#__NEXT_DATA__')[0].text)['props']['pageProps']['property']
         except:
