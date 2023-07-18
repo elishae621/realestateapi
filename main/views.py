@@ -7,7 +7,12 @@ from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from scrapyd_api import ScrapydAPI
-from main.models import Property
+from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
+from main import serializers
+from rest_framework import viewsets
+from rest_framework.response import Response
+from main import models
 import random 
 import requests
 import json
@@ -27,7 +32,7 @@ def is_valid_url(url):
 
     return True
 
-userAgentStrings = [
+PropertyAgentStrings = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.2227.0 Safari/537.36',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.2228.0 Safari/537.36',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.3497.92 Safari/537.36',
@@ -40,6 +45,72 @@ userAgentStrings = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15',
 ]
+
+
+
+
+class PropertyViewSet(viewsets.ModelViewSet):
+    queryset = models.Property.objects.all()
+        
+    def list(self, request):
+        serializer = serializers.PropertySerializer(self.queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        Property = get_object_or_404(self.queryset, pk=pk)
+        serializer = serializers.PropertySerializer(Property, context={'request': request})
+        return Response(serializer.data)
+    
+
+class AgentViewSet(viewsets.ModelViewSet):
+    queryset = models.Agent.objects.all()
+    
+    def list(self, request):
+        serializer = serializers.AgentSerializer(self.queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        Agent = get_object_or_404(self.queryset, pk=pk)
+        serializer = serializers.AgentSerializer(Agent, context={'request': request})
+        return Response(serializer.data)
+    
+class SchoolViewSet(viewsets.ModelViewSet):
+    queryset = models.School.objects.all()
+    
+    def list(self, request):
+        serializer = serializers.SchoolSerializer(self.queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        School = get_object_or_404(self.queryset, pk=pk)
+        serializer = serializers.SchoolSerializer(School, context={'request': request})
+        return Response(serializer.data)
+    
+
+class NeighborhoodViewSet(viewsets.ModelViewSet):
+    queryset = models.Neighborhood.objects.all()
+    
+    def list(self, request):
+        serializer = serializers.NeighborhoodSerializer(self.queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        Neighborhood = get_object_or_404(self.queryset, pk=pk)
+        serializer = serializers.NeighborhoodSerializer(Neighborhood, context={'request': request})
+        return Response(serializer.data)
+    
+class ListItemViewSet(viewsets.ModelViewSet):
+    queryset = models.ListItem.objects.all()
+    
+    def list(self, request):
+        serializer = serializers.ListItemSerializer(self.queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        ListItem = get_object_or_404(self.queryset, pk=pk)
+        serializer = serializers.ListItemSerializer(ListItem, context={'request': request})
+        return Response(serializer.data)
+
 
 
 def home(request):
@@ -68,7 +139,7 @@ def crawl(request):
         # I mean, anything
         settings = {
             'unique_id': unique_id,  # unique ID for each record for DB
-            'USER_AGENT': random.choice(userAgentStrings)
+            'Property_AGENT': random.choice(PropertyAgentStrings)
         }
 
         # Here we schedule a new crawling task from scrapyd.
@@ -102,7 +173,7 @@ def crawl(request):
         if status == 'finished':
             try:
                 # this is the unique_id that we created even before crawling started.
-                item = Property.objects.get(unique_id=unique_id)
+                item = models.Property.objects.get(unique_id=unique_id)
                 return JsonResponse({'data': item.to_dict['data']})
             except Exception as e:
                 return JsonResponse({'error': str(e)})

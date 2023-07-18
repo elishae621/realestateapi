@@ -107,7 +107,7 @@ class PropertyPipeline:
         for photo in extract(propertyDetails, 'photos', list=True):
             image = models.Image.objects.create(
                 property=property,
-                image=extract(photo, 'href').replace('.jpg', '-w480_h360_x2.jpg')
+                image=extract(photo, 'href', image=True)
             )
             models.ImageTag.objects.filter(image=image).delete()
             for tag in extract(photo, 'tags', list=True):

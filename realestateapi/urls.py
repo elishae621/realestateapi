@@ -18,8 +18,21 @@ from django.contrib import admin
 from django.urls import path
 from main import views
 
+from rest_framework import routers
+
+router = routers.SimpleRouter()
+router.register(r'', views.PropertyViewSet)
+router.register(r'agents', views.AgentViewSet)
+router.register(r'schools', views.SchoolViewSet)
+router.register(r'neighborhoods', views.NeighborhoodViewSet)
+router.register(r'listitem', views.ListItemViewSet)
+
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home'),
+    path('send/', views.home, name='home'),
     path('crawl/', views.crawl, name='crawl'),
 ]
+
+urlpatterns += router.urls
