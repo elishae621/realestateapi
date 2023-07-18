@@ -51,6 +51,7 @@ PropertyAgentStrings = [
 
 class PropertyViewSet(viewsets.ModelViewSet):
     queryset = models.Property.objects.all()
+    lookup_field = 'slug'
         
     def list(self, request):
         serializer = serializers.PropertySerializer(self.queryset, many=True, context={'request': request})
@@ -64,6 +65,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
 class AgentViewSet(viewsets.ModelViewSet):
     queryset = models.Agent.objects.all()
+    lookup_field = 'agent_id'
     
     def list(self, request):
         serializer = serializers.AgentSerializer(self.queryset, many=True, context={'request': request})
@@ -99,19 +101,6 @@ class NeighborhoodViewSet(viewsets.ModelViewSet):
         serializer = serializers.NeighborhoodSerializer(Neighborhood, context={'request': request})
         return Response(serializer.data)
     
-class ListItemViewSet(viewsets.ModelViewSet):
-    queryset = models.ListItem.objects.all()
-    
-    def list(self, request):
-        serializer = serializers.ListItemSerializer(self.queryset, many=True, context={'request': request})
-        return Response(serializer.data)
-
-    def retrieve(self, request, pk=None):
-        ListItem = get_object_or_404(self.queryset, pk=pk)
-        serializer = serializers.ListItemSerializer(ListItem, context={'request': request})
-        return Response(serializer.data)
-
-
 
 def home(request):
     response = requests.post('http://localhost:8000/crawl/', data={'url': 'https://www.realtor.com/realestateandhomes-detail/1001-N-Napa-St_Spokane_WA_99202_M16851-00058'})

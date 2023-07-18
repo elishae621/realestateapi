@@ -66,7 +66,6 @@ class PropertyPipeline:
         property.state_code=extract(propertyDetails, 'location,address,state_code')
         property.postal_code=extract(propertyDetails, 'location,address,postal_code')
         property.country=extract(propertyDetails, 'location,address,country')
-        property.validation_code=extract(propertyDetails, 'location,address,validation_code')
         property.state=extract(propertyDetails, 'location,address,state')
         property.latitude=extract(propertyDetails, 'location,address,coordinate,lat', decimal=True)
         property.longitude=extract(propertyDetails, 'location,address,coordinate,lon', decimal=True)
@@ -219,7 +218,7 @@ class PropertyPipeline:
                 sch.grades.add(models.ListItem.objects.create(name=grade))
                 sch.save()
             
-            property.schools.add(sch)
+            property.nearby_schools.add(sch)
             property.save()
             
         property.tags.all().delete()

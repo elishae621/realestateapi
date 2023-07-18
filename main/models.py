@@ -27,7 +27,7 @@ class Property(models.Model):
     last_sold_price = models.IntegerField(null=True, blank=True)
     price_per_sqft = models.IntegerField(null=True, blank=True)
     list_date = models.DateTimeField(null=True, blank=True)
-    schools = models.ManyToManyField('main.School', verbose_name="Nearby Schools")
+    nearby_schools = models.ManyToManyField('main.School')
     waterfront_water_access = models.ManyToManyField('main.ListItem', related_name='waterfront_water_access_item')
     land_info = models.ManyToManyField('main.ListItem', related_name='land_info_item')
     school_information = models.ManyToManyField('main.ListItem', related_name='school_info_item')
@@ -47,7 +47,6 @@ class Property(models.Model):
     postal_code = models.CharField(max_length=10, null=True, blank=True)
     county = models.CharField(max_length=20, null=True, blank=True)
     country = models.CharField(max_length=20, null=True, blank=True)
-    validation_code = models.CharField(max_length=10, null=True, blank=True)
     state = models.CharField(max_length=20, null=True, blank=True)
     latitude = models.DecimalField(decimal_places=6, max_digits=10, null=True, blank=True)
     longitude = models.DecimalField(decimal_places=6, max_digits=10, null=True, blank=True)
@@ -70,25 +69,25 @@ class Property(models.Model):
     fireplace = models.CharField(max_length=50, null=True, blank=True)
     heating = models.CharField(max_length=20, null=True, blank=True)
     roofing = models.CharField(max_length=20, null=True, blank=True)
-    garage = models.CharField(max_length=20, null=True, blank=True)
-    garage = models.CharField(max_length=20, null=True, blank=True)
     pool = models.CharField(max_length=20, null=True, blank=True)
     sqft = models.IntegerField(null=True, blank=True)
     lot_sqft = models.IntegerField(null=True, blank=True)
     rooms = models.IntegerField(null=True, blank=True)
     stories = models.IntegerField(null=True, blank=True)
-    sub_type = models.CharField(max_length=20, null=True, blank=True)
     text = models.TextField(null=True, blank=True)
     type = models.CharField(max_length=20, null=True, blank=True)
+    sub_type = models.CharField(max_length=20, null=True, blank=True)
     units = models.IntegerField(null=True, blank=True)
     year_built = models.IntegerField(null=True, blank=True)
     year_renovated = models.IntegerField(null=True, blank=True)
     name = models.CharField(max_length=50, null=True, blank=True)
     zoning = models.CharField(max_length=50, null=True, blank=True)
-    primary_photo = models.URLField(max_length=200, null=True, blank=True)
     
     def __str__(self):
         return self.slug
+    
+    def photos_count(self):
+        return self.photos.count()
 
 
 class ListItem(models.Model):
@@ -131,7 +130,7 @@ class Neighborhood(models.Model):
         return self.local_url
 
 class PriceHistory(models.Model):
-    property = models.ForeignKey(Property, null=True, on_delete=models.CASCADE)
+    property = models.ForeignKey(Property, null=True, on_delete=models.CASCADE, related_name='price_history')
     date = models.DateField()
     event = models.CharField(max_length=20)
     price = models.IntegerField()
@@ -141,11 +140,11 @@ class PriceHistory(models.Model):
     def __str__(self):
         return f"PriceHistory: {self.property.name}"
 class TaxHistory(models.Model):
-    property = models.ForeignKey(Property, null=True, on_delete=models.CASCADE)
+    property = models.ForeignKey(Property, null=True, on_delete=models.CASCADE, related_name='tax_history')
     year = models.IntegerField()
     tax = models.IntegerField()
     land = models.IntegerField()
-    building = models.CharField(max_length=20, null=True, blank=True)
+    building = models.IntegerField(null=True, blank=True)
     total = models.IntegerField()
 
     def __str__(self):
@@ -169,6 +168,7 @@ class School(models.Model):
 
     def __str__(self):
         return self.name
+    
 
 class Agent(models.Model):
     agent_id = models.CharField(max_length=20, unique=True)
@@ -188,7 +188,7 @@ class Agent(models.Model):
     last_updated = models.DateTimeField(null=True, blank=True)
     
     def __str__(self):
-        return self.name if self.name else self.agent_id
+        return self.agent_id
     
 class ServedAreas(models.Model):
     name = models.CharField(max_length=20)
@@ -199,13 +199,13 @@ class ServedAreas(models.Model):
         return self.name
 
 class Image(models.Model):
-    property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='photos')
     image = models.URLField(max_length=200)
     
     def __str__(self):
         return '{} - {}'.format(self.property.slug, self.image)
 
 class ImageTag(models.Model):
-    image = models.ForeignKey(Image, on_delete=models.CASCADE)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE, related_name='tags')
     label = models.CharField(max_length=20)
-    probability = models.DecimalField(decimal_places=20, max_digits=25, null=True, blank=True)
+    probability = models.DecimalField(decimal_places=15, max_digits=25, null=True, blank=True)

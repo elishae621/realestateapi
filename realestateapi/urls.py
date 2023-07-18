@@ -21,11 +21,10 @@ from main import views
 from rest_framework import routers
 
 router = routers.SimpleRouter()
-router.register(r'', views.PropertyViewSet)
+router.register(r'properties', views.PropertyViewSet)
 router.register(r'agents', views.AgentViewSet)
 router.register(r'schools', views.SchoolViewSet)
 router.register(r'neighborhoods', views.NeighborhoodViewSet)
-router.register(r'listitem', views.ListItemViewSet)
 
 
 
