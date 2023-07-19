@@ -2,21 +2,17 @@ from uuid import uuid4
 from urllib.parse import urlparse
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
-from django.views.decorators.http import require_POST, require_http_methods
-from django.shortcuts import render
+from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from scrapyd_api import ScrapydAPI
-from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404
 from main import serializers
 from rest_framework import viewsets
-from rest_framework.response import Response
+from django.db.models.functions import Random
+from django_filters import rest_framework as filters
 from main import models
 import random 
 import requests
-import json
-
 
 
 # connect scrapyd service
@@ -49,62 +45,62 @@ PropertyAgentStrings = [
 
 
 
-class PropertyViewSet(viewsets.ModelViewSet):
-    queryset = models.Property.objects.all()
+class PropertyViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = models.Property.objects.order_by(Random())
     lookup_field = 'slug'
+    serializer_class = serializers.PropertySerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_fields = ['address', 'slug', 'status', 'list_price', 'list_date', 'flood_factor_severity', 'fire_factor_severity', 'state_code', 'county', 'baths', 'beds', 'garage_type', 'type', 'sub_type', 'year_built', 'year_renovated', 'units']
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
         
-    def list(self, request):
-        serializer = serializers.PropertySerializer(self.queryset, many=True, context={'request': request})
-        return Response(serializer.data)
 
-    def retrieve(self, request, pk=None):
-        Property = get_object_or_404(self.queryset, pk=pk)
-        serializer = serializers.PropertySerializer(Property, context={'request': request})
-        return Response(serializer.data)
+class AgentViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = models.Agent.objects.order_by(Random())
+    lookup_field = 'slug'
+    serializer_class = serializers.AgentSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_fields = ['address', 'slug', 'status', 'list_price', 'list_date', 'flood_factor_severity', 'fire_factor_severity', 'state_code', 'county', 'baths', 'beds', 'garage_type', 'type', 'sub_type', 'year_built', 'year_renovated', 'units']
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+    
+class SchoolViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = models.School.objects.order_by(Random())
+    lookup_field = 'slug'
+    serializer_class = serializers.SchoolSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_fields = ['address', 'slug', 'status', 'list_price', 'list_date', 'flood_factor_severity', 'fire_factor_severity', 'state_code', 'county', 'baths', 'beds', 'garage_type', 'type', 'sub_type', 'year_built', 'year_renovated', 'units']
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
     
 
-class AgentViewSet(viewsets.ModelViewSet):
-    queryset = models.Agent.objects.all()
-    lookup_field = 'agent_id'
-    
-    def list(self, request):
-        serializer = serializers.AgentSerializer(self.queryset, many=True, context={'request': request})
-        return Response(serializer.data)
-
-    def retrieve(self, request, pk=None):
-        Agent = get_object_or_404(self.queryset, pk=pk)
-        serializer = serializers.AgentSerializer(Agent, context={'request': request})
-        return Response(serializer.data)
-    
-class SchoolViewSet(viewsets.ModelViewSet):
-    queryset = models.School.objects.all()
-    
-    def list(self, request):
-        serializer = serializers.SchoolSerializer(self.queryset, many=True, context={'request': request})
-        return Response(serializer.data)
-
-    def retrieve(self, request, pk=None):
-        School = get_object_or_404(self.queryset, pk=pk)
-        serializer = serializers.SchoolSerializer(School, context={'request': request})
-        return Response(serializer.data)
+class NeighborhoodViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = models.Neighborhood.objects.order_by(Random())
+    lookup_field = 'slug'
+    serializer_class = serializers.NeighborhoodSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_fields = ['address', 'slug', 'status', 'list_price', 'list_date', 'flood_factor_severity', 'fire_factor_severity', 'state_code', 'county', 'baths', 'beds', 'garage_type', 'type', 'sub_type', 'year_built', 'year_renovated', 'units']
     
 
-class NeighborhoodViewSet(viewsets.ModelViewSet):
-    queryset = models.Neighborhood.objects.all()
-    
-    def list(self, request):
-        serializer = serializers.NeighborhoodSerializer(self.queryset, many=True, context={'request': request})
-        return Response(serializer.data)
-
-    def retrieve(self, request, pk=None):
-        Neighborhood = get_object_or_404(self.queryset, pk=pk)
-        serializer = serializers.NeighborhoodSerializer(Neighborhood, context={'request': request})
-        return Response(serializer.data)
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
     
 
-def home(request):
-    response = requests.post('http://localhost:8000/crawl/', data={'url': 'https://www.realtor.com/realestateandhomes-detail/1001-N-Napa-St_Spokane_WA_99202_M16851-00058'})
+def scrapUrlView(request):
+    response = requests.post(f'{request._current_scheme_host}/crawl/', data={'url': request.GET.get('url', None)})
     return HttpResponse(response.text, content_type='json')
+
 
 @csrf_exempt
 @require_http_methods(['POST', 'GET'])  # only get and post

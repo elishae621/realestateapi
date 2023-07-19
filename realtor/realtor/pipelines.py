@@ -10,8 +10,24 @@ from itemadapter import ItemAdapter
 from main import models
 from dateutil.parser import parse
 from decimal import Decimal
-import json
+import re
 import logging
+
+
+def clean_string(text):
+    if not text:
+        return text
+    notags_text = re.sub('<.*?>', '', text)
+    noEscape_text = re.sub(r'\\[ntr]', ' ', notags_text)
+    return noEscape_text
+
+def extract_decimal_number(string):
+    pattern = r'[-+]?\d*\.?\d+'
+    matches = re.findall(pattern, string)
+    if matches:
+        return float(matches[0])
+    return None
+
 
 def extract(item, filters, date=False, image=False, decimal=False, list=False):
     filters_list = filters.split(",")
@@ -24,7 +40,7 @@ def extract(item, filters, date=False, image=False, decimal=False, list=False):
     if item and image:
         item.replace('.jpg', '-w480_h360_x2.jpg')
     if item and decimal:
-        item = Decimal(item)
+        item = Decimal(extract_decimal_number(str(item)))
     if item and date:
         item = parse(item)
     if item == None and list:
@@ -92,7 +108,7 @@ class PropertyPipeline:
         property.rooms=extract(propertyDetails, 'description,rooms')
         property.stories=extract(propertyDetails, 'description,stories')
         property.sub_type=extract(propertyDetails, 'description,sub_type')
-        property.text=extract(propertyDetails, 'description,text')
+        property.text=clean_string(extract(propertyDetails, 'description,text'))
         property.type=extract(propertyDetails, 'description,type')
         property.units=extract(propertyDetails, 'description,units')
         property.year_built=extract(propertyDetails, 'description,year_built')
@@ -148,7 +164,7 @@ class PropertyPipeline:
                         property.utilities.add(models.ListItem.objects.create(name=element))
                         property.save()
                         
-        property.pricehistory_set.all().delete()
+        property.price_history.all().delete()
         for history in extract(propertyDetails, 'property_history', list=True):
             models.PriceHistory.objects.create(
                 date=extract(history, 'date', date=True),
@@ -159,7 +175,7 @@ class PropertyPipeline:
                 property=property
             )
             
-        property.taxhistory_set.all().delete()
+        property.tax_history.all().delete()
         for tax in extract(propertyDetails, 'tax_history', list=True):
             models.TaxHistory.objects.create(
                 year=extract(tax, 'year'),
@@ -198,7 +214,6 @@ class PropertyPipeline:
                 latitude=extract(school, 'coordinate,lat', decimal=True),
             )
             models.School.objects.filter(id=sch.id).update(
-                distance_in_miles=extract(school, 'distance_in_miles'),
                 district=extract(school, 'district,name'),
                 funding_type=extract(school, 'funding_type'),
                 greatschools_id=extract(school, 'greatschools_id'),
@@ -246,14 +261,14 @@ class PropertyPipeline:
             is_coming_soon=extract(propertyDetails, 'flags,is_coming_soon'),    
         )
         for advertiser in extract(propertyDetails, 'consumer_advertisers', list=True):
-            if extract(advertiser, 'type') == 'Agent':
+            if extract(advertiser, 'type') == 'Agent' and extract(advertiser, 'href'):
                 agent, created = models.Agent.objects.get_or_create(
                     agent_id=extract(advertiser, 'agent_id'),
                 )
                 property.agent = agent
                 property.save()
-                
         return item
+    
 
 class AgentPipeline:
     def process_item(self, item, spider):
@@ -296,4 +311,4 @@ class AgentPipeline:
             agent.phones.add(models.ListItem.objects.create(name=extract(phone, 'number')))
             agent.save()
         
-        return item 
+        return item

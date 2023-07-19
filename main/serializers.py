@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 from main import models
 
 
@@ -20,6 +21,11 @@ class CustomHyperlinkedModelSerializer(serializers.HyperlinkedModelSerializer):
         return field_class, field_kwargs
 
 
+class CustomHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
+    def to_representation(self, value):
+        return super().to_representation(value)
+
+
 class CustomListField(serializers.ListField):
     def to_representation(self, data):
         """
@@ -30,56 +36,102 @@ class CustomListField(serializers.ListField):
             for item in data.all()
         ]
 
+
+class CustomUrlListField(serializers.ListField):
+    def __init__(self, **kwargs):
+        self.view_name = kwargs.pop("view_name")
+        super().__init__(**kwargs)
+
+    def to_representation(self, data):
+        """
+        List of object instances -> List of dicts of primitive datatypes.
+        """
+
+        return [
+            reverse(
+                self.view_name,
+                kwargs={"slug": item.slug},
+                request=self.context["request"],
+            )
+            if item is not None
+            else None
+            for item in data.all()
+        ]
+
+
 class FlagRelatedField(serializers.RelatedField):
     def to_representation(self, data):
         """
         List of object instances -> List of dicts of primitive datatypes.
         """
         flags = dict(models.Flags.objects.filter(id=data.id).values()[0])
-        del flags['id']
-        del flags['property_id']
+        del flags["id"]
+        del flags["property_id"]
         return flags
-    
+
+
 class ImageTagRelatedField(serializers.RelatedField):
     def to_representation(self, data):
         """
         List of object instances -> List of dicts of primitive datatypes.
         """
         return [
-            {'label': item.label, 'probability': str(item.probability)} if item is not None else None
+            {"label": item.label, "probability": str(item.probability)}
+            if item is not None
+            else None
             for item in data.all()
         ]
+
 
 class PriceHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.PriceHistory
-        fields = ['date', 'event', 'price', 'price_sqft', 'source']
-        
+        fields = ["date", "event", "price", "price_sqft", "source"]
+
+
 class TaxHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.TaxHistory
-        fields = ['year', 'tax', 'land', 'building', 'total']
+        fields = ["year", "tax", "land", "building", "total"]
 
 
 class SchoolSerializer(serializers.ModelSerializer):
     education_levels = CustomListField()
     grads = CustomListField()
-    
+
     class Meta:
         model = models.School
-        fields = ['name', 'latitude', 'longitude', 'education_levels', 'distance_in_miles', 'district', 'greatschools_id', 'nces_code', 'rating', 'grades', 'funding_type', 'student_count', 'review_count', 'parent_rating']
+        fields = [
+            "name",
+            "latitude",
+            "longitude",
+            "education_levels",
+            "distance_in_miles",
+            "district",
+            "greatschools_id",
+            "nces_code",
+            "rating",
+            "grades",
+            "funding_type",
+            "student_count",
+            "review_count",
+            "parent_rating",
+        ]
+
 
 class ImageTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ImageTag
-        fields = ['label', 'probability']  
-        
+        fields = ["label", "probability"]
+
+
 class PhotosSerializer(serializers.ModelSerializer):
     tags = ImageTagRelatedField(read_only=True)
+
     class Meta:
         model = models.Image
-        fields = ['image', 'tags']
-         
+        fields = ["image", "tags"]
+
 
 class PropertySerializer(CustomHyperlinkedModelSerializer):
     other_property_info = CustomListField()
@@ -96,7 +148,7 @@ class PropertySerializer(CustomHyperlinkedModelSerializer):
         view_name="property-detail", lookup_field="slug"
     )
     agent = serializers.HyperlinkedRelatedField(
-        view_name="agent-detail", lookup_field="agent_id", read_only=True
+        view_name="agent-detail", lookup_field="slug", read_only=True
     )
     neighborhood = serializers.RelatedField(read_only=True)
     flags = FlagRelatedField(read_only=True)
@@ -168,6 +220,7 @@ class PropertySerializer(CustomHyperlinkedModelSerializer):
 
     class Meta:
         model = models.Property
+        lookup_field = "slug"
         fields = [
             "url",
             "slug",
@@ -209,18 +262,87 @@ class PropertySerializer(CustomHyperlinkedModelSerializer):
 
 
 class AgentSerializer(CustomHyperlinkedModelSerializer):
+    phones = CustomListField()
+    specializations = CustomListField()
+    zips = CustomListField()
+    properties = CustomUrlListField(view_name="property-detail")
+    url = serializers.HyperlinkedIdentityField(
+        view_name="agent-detail", lookup_field="slug"
+    )
+
     class Meta:
         model = models.Agent
-        fields = "__all__"
+        fields = [
+            "url",
+            "agent_id",
+            "slug",
+            "name",
+            "phones",
+            "city",
+            "state_code",
+            "country",
+            "postal_code",
+            "website",
+            "broker",
+            "broker_address",
+            "last_updated",
+            "description",
+            "specializations",
+            "zips",
+            "properties_count",
+            "properties",
+        ]
+        lookup_field = "slug"
 
 
 class SchoolSerializer(CustomHyperlinkedModelSerializer):
+    education_levels = CustomListField()
+    grades = CustomListField()
+    url = serializers.HyperlinkedIdentityField(
+        view_name="school-detail", lookup_field="slug"
+    )
+    nearby_properties = CustomUrlListField(view_name="property-detail")
+
     class Meta:
         model = models.Property
-        fields = "__all__"
+        fields = [
+            "url",
+            "name",
+            "slug",
+            "latitude",
+            "longitude",
+            "education_levels",
+            "district",
+            "greatschools_id",
+            "nces_code",
+            "rating",
+            "grades",
+            "funding_type",
+            "student_count",
+            "parent_rating",
+            "nearby_properties",
+            "nearby_properties_count",
+        ]
+        lookup_field = "slug"
 
 
 class NeighborhoodSerializer(CustomHyperlinkedModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name="neighborhood-detail", lookup_field="slug"
+    )
+    nearby_neighborhoods = CustomUrlListField(view_name="neighborhood-detail")
+
     class Meta:
         model = models.Property
-        fields = "__all__"
+        fields = [
+            "url",
+            "area",
+            "local_url",
+            "slug",
+            "median_listing_price",
+            "median_days_on_market",
+            "median_price_per_sqft",
+            "hot_market_badge",
+            "nearby_neighborhoods",
+        ]
+        lookup_field = "slug"

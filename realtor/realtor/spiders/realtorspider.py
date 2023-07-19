@@ -1,7 +1,5 @@
 import scrapy
 import random
-import logging
-import time
 import json
 import scrapy
 import os
@@ -9,15 +7,11 @@ import sys
 import environ
 from bs4 import BeautifulSoup
 from pathlib import Path
-from scrapy.crawler import CrawlerProcess, CrawlerRunner
-from scrapy.utils.log import configure_logging
+from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
-from multiprocessing import Process, Queue
 from scrapy_playwright.page import PageMethod
 sys.path.append(os.path.dirname(os.path.abspath('./main')))
-from main import models
-from dateutil.parser import parse
-from decimal import Decimal
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 sys.path.append(BASE_DIR)
@@ -27,14 +21,6 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 meta = {}
 
-states = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado",
-  "Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois",
-  "Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland",
-  "Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana",
-  "Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York",
-  "North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania",
-  "Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah",
-  "Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming", "Washington_DC"]
 
 userAgentStrings = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.2227.0 Safari/537.36',
@@ -62,10 +48,6 @@ class RealtorspiderSpider(scrapy.Spider):
     custom_settings = get_project_settings()
     
     def start_requests(self):
-        category_dict = {
-            'buy': 'realestateandhomes-search',
-            'rent': 'apartments'   
-    }
         if 'realestateandhomes-detail' in self.url:
             self.logger.info('in property link = {}'.format(self.url))
             yield scrapy.Request(self.url,
@@ -103,8 +85,8 @@ class RealtorspiderSpider(scrapy.Spider):
             
         for link in links:
             self.logger.info('in property link = {}'.format(link))
-        yield scrapy.Request(link,
-            headers=headers, meta=meta)
+            yield scrapy.Request(link,
+                headers=headers, meta=meta)
 
 
     def parse(self, response):
@@ -119,13 +101,12 @@ class RealtorspiderSpider(scrapy.Spider):
         data['property'] = item
         
         for advertiser in item['consumer_advertisers']:
-            if advertiser['type'] == 'Agent':
+            if advertiser['type'] == 'Agent' and advertiser['href']:
                 self.logger.info('in agent link = {}'.format(advertiser['href']))
                 yield scrapy.Request(f"https://www.realtor.com{advertiser['href']}",
                 headers=headers,
                 callback=self.parse_agent, meta={'data': data}
                 )
-                
         yield data
     
     def parse_agent(self, response):
@@ -134,7 +115,7 @@ class RealtorspiderSpider(scrapy.Spider):
         item = json.loads(soup.css.select('script#__NEXT_DATA__')[0].text)['props']['pageProps']['agentDetails']
         data = response.meta['data']
         data['agent'] = item
-        return data
+        yield data
         
 if __name__ == '__main__':
     process = CrawlerProcess()

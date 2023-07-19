@@ -27,7 +27,7 @@ class Property(models.Model):
     last_sold_price = models.IntegerField(null=True, blank=True)
     price_per_sqft = models.IntegerField(null=True, blank=True)
     list_date = models.DateTimeField(null=True, blank=True)
-    nearby_schools = models.ManyToManyField('main.School')
+    nearby_schools = models.ManyToManyField('main.School', related_name='properties')
     waterfront_water_access = models.ManyToManyField('main.ListItem', related_name='waterfront_water_access_item')
     land_info = models.ManyToManyField('main.ListItem', related_name='land_info_item')
     school_information = models.ManyToManyField('main.ListItem', related_name='school_info_item')
@@ -55,7 +55,7 @@ class Property(models.Model):
     tags = models.ManyToManyField('main.ListItem', related_name="tag")
     unit_count = models.IntegerField(null=True, blank=True)
     baths = models.IntegerField(null=True, blank=True)
-    baths_consolidated = models.DecimalField(decimal_places=1, max_digits=3, null=True, blank=True)
+    baths_consolidated = models.CharField(max_length=5, null=True, blank=True)
     baths_full = models.IntegerField(null=True, blank=True)
     baths_3qtr = models.IntegerField(null=True, blank=True)
     baths_half = models.IntegerField(null=True, blank=True)
@@ -118,13 +118,14 @@ class Flags(models.Model):
 
 class Neighborhood(models.Model):
     area = models.CharField(max_length=50)
-    local_url = models.CharField(max_length=50, unique=True)
+    local_url = models.CharField(max_length=50)
+    slug = AutoSlugField(populate_from='local_url', unique_with=['id'])
     median_listing_price = models.IntegerField(null=True, blank=True)
     median_sold_price = models.IntegerField(null=True, blank=True)
     median_days_on_market = models.IntegerField(null=True, blank=True)
     median_price_per_sqft = models.IntegerField(null=True, blank=True)
     nearby_neighborhoods = models.ManyToManyField('main.Neighborhood')
-    hot_market_badge = models.CharField(max_length=50, null=True, blank=True, unique=True)
+    hot_market_badge = models.CharField(max_length=50, null=True, blank=True)
     
     def __str__(self):
         return self.local_url
@@ -152,10 +153,10 @@ class TaxHistory(models.Model):
 
 class School(models.Model):
     name = models.CharField(max_length=50)
+    slug = AutoSlugField(populate_from='name', unique_with=['id'])
     latitude = models.DecimalField(decimal_places=6, max_digits=10, null=True, blank=True)
     longitude = models.DecimalField(decimal_places=6, max_digits=10, null=True, blank=True)
     education_levels = models.ManyToManyField('main.ListItem', related_name='level')
-    distance_in_miles = models.DecimalField(decimal_places=1, max_digits=4, null=True, blank=True)
     district = models.CharField(max_length=50, null=True, blank=True)
     greatschools_id = models.CharField(max_length=20, null=True, blank=True)
     nces_code = models.CharField(max_length=20, null=True, blank=True)
@@ -169,9 +170,16 @@ class School(models.Model):
     def __str__(self):
         return self.name
     
+    def nearby_properties(self):
+        return self.properties.all()
+    
+    def nearby_properties_count(self):
+        return self.properties.count()
+    
 
 class Agent(models.Model):
-    agent_id = models.CharField(max_length=20, unique=True)
+    agent_id = models.CharField(max_length=20)
+    slug = AutoSlugField(populate_from='agent_id', unique_with=['id'])
     city = models.CharField(max_length=20, null=True, blank=True)
     postal_code = models.CharField(max_length=10, null=True, blank=True)
     state_code = models.CharField(max_length=5, null=True, blank=True)
@@ -184,12 +192,18 @@ class Agent(models.Model):
     website = models.URLField(max_length=200, null=True, blank=True)
     broker = models.CharField(max_length=50, null=True, blank=True)
     broker_address = models.CharField(max_length=20, null=True, blank=True)
-    website = models.URLField(max_length=200, null=True, blank=True)
     last_updated = models.DateTimeField(null=True, blank=True)
     
     def __str__(self):
         return self.agent_id
     
+    def properties(self):
+        return self.property_set.all()
+    
+    def properties_count(self):
+        return self.property_set.count()
+    
+
 class ServedAreas(models.Model):
     name = models.CharField(max_length=20)
     state_code = models.CharField(max_length=5)

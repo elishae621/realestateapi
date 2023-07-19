@@ -30,7 +30,7 @@ router.register(r'neighborhoods', views.NeighborhoodViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('send/', views.home, name='home'),
+    path('send/', views.scrapUrlView, name='home'),
     path('crawl/', views.crawl, name='crawl'),
 ]
 
