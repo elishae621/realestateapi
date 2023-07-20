@@ -64,6 +64,8 @@ class PropertyPipeline:
         property.status=extract(propertyDetails, 'status')
         property.coming_soon_date=extract(propertyDetails, 'coming_soon_date', date=True)
         property.list_price=extract(propertyDetails, 'list_price')
+        property.list_price_min=extract(propertyDetails, 'list_price_min')
+        property.list_price_max=extract(propertyDetails, 'list_price_max')
         property.last_price_change_amount=extract(propertyDetails, 'last_price_change_amount')
         property.last_sold_date=extract(propertyDetails, 'last_sold_date', date=True)
         property.last_sold_price=extract(propertyDetails, 'last_sold_price')
@@ -88,22 +90,30 @@ class PropertyPipeline:
         property.driving_directions=extract(propertyDetails, 'location,driving_directions')
         property.builder=extract(propertyDetails, 'builder')
         property.baths=extract(propertyDetails, 'description,baths')
+        property.baths_min=extract(propertyDetails, 'description,baths_min')
+        property.baths_max=extract(propertyDetails, 'description,baths_max')
         property.baths_consolidated=extract(propertyDetails, 'description,baths_consolidated')
         property.baths_full=extract(propertyDetails, 'description,baths_full')
         property.baths_3qtr=extract(propertyDetails, 'description,baths_3qtr')
         property.baths_half=extract(propertyDetails, 'description,baths_half')
         property.baths_total=extract(propertyDetails, 'description,baths_total')
         property.beds=extract(propertyDetails, 'description,beds')
+        property.beds_min=extract(propertyDetails, 'description,beds_min')
+        property.beds_max=extract(propertyDetails, 'description,beds_max')
         property.construction=extract(propertyDetails, 'description,construction')
         property.cooling=extract(propertyDetails, 'description,cooling')
         property.exterior=extract(propertyDetails, 'description,exterior')
         property.fireplace=extract(propertyDetails, 'description,fireplace')
         property.garage=extract(propertyDetails, 'description,garage')
+        property.garage_min=extract(propertyDetails, 'description,garage_min')
+        property.garage_max=extract(propertyDetails, 'description,garage_max')
         property.garage_type=extract(propertyDetails, 'description,garage_type')
         property.heating=extract(propertyDetails, 'description,heating')
         property.roofing=extract(propertyDetails, 'description,roofing')
         property.pool=extract(propertyDetails, 'description,pool')
         property.sqft=extract(propertyDetails, 'description,sqft')
+        property.sqft_min=extract(propertyDetails, 'description,sqft_min')
+        property.sqft_max=extract(propertyDetails, 'description,sqft_max')
         property.lot_sqft=extract(propertyDetails, 'description,lot_sqft')
         property.rooms=extract(propertyDetails, 'description,rooms')
         property.stories=extract(propertyDetails, 'description,stories')
@@ -186,29 +196,32 @@ class PropertyPipeline:
                 property=property
             )
             
-        if extract(propertyDetails, 'neighborhood'):
-            neighborhood, created = models.Neighborhood.objects.get_or_create(local_url=extract(propertyDetails, 'neighborhood,local_url'))
-            models.Neighborhood.objects.filter(local_url=neighborhood.local_url).update(
-                area=extract(propertyDetails, 'neighborhood,area'),
-                median_price_per_sqft=extract(propertyDetails, 'neighborhood,median_price_per_sqft'),
-                median_listing_price=extract(propertyDetails, 'neighborhood,median_listing_price'),
-                median_sold_price=extract(propertyDetails, 'neighborhood,median_sold_price'),
-                median_days_on_market=extract(propertyDetails, 'neighborhood,median_days_on_market'),
-                hot_market_badge=extract(propertyDetails, 'neighborhood,hot_market_badge'),
+        if extract(propertyDetails, 'location,neighborhoods'):
+            neighborhood_details = extract(propertyDetails, 'location,neighborhoods')
+            neighborhood, created = models.Neighborhood.objects.get_or_create(slug_id=extract(neighborhood_details[0], 'slug_id'))
+            models.Neighborhood.objects.filter(slug_id=neighborhood.slug_id).update(
+                name=extract(neighborhood_details[0], 'name'),
+                state_code=extract(neighborhood_details[0], 'state_code'),
+                median_listing_price=extract(neighborhood_details[0], 'median_listing_price'),
+                city=extract(neighborhood_details[0], 'city'),
             )
+            property.neighborhood = neighborhood
+            property.save()
         
-            for nbh in extract(propertyDetails, 'nearby_neighborhoods', list=True):
-                nearby_nbh, created = models.Neighborhood.objects.get_or_create(local_url=extract(nbh, 'local_url'))
-                models.Neighborhood.objects.filter(local_url=nearby_nbh.local_url).update(
-                    area=extract(nbh, 'area'),
+            for nbh in neighborhood_details[1:]:
+                nearby_nbh, created = models.Neighborhood.objects.get_or_create(slug_id=extract(nbh, 'slug_id'))
+                models.Neighborhood.objects.filter(slug_id=nearby_nbh.slug_id).update(
+                    name=extract(nbh, 'name'),
+                    state_code=extract(nbh, 'state_code'),
                     median_listing_price=extract(nbh, 'median_listing_price'),
+                    city=extract(nbh, 'city'),
                 )
                 
                 neighborhood.nearby_neighborhoods.add(nearby_nbh)
                 neighborhood.save()
 
             
-        for school in extract(propertyDetails, 'school', list=True):
+        for school in extract(propertyDetails, 'nearby_schools,schools', list=True):
             sch = models.School.objects.get_or_create(
                 longitude=extract(school, 'coordinate,lon', decimal=True),
                 latitude=extract(school, 'coordinate,lat', decimal=True),

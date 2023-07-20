@@ -12,7 +12,7 @@ class Property(models.Model):
     source_url = models.URLField(max_length=200)
     agent = models.ForeignKey('main.Agent', null=True, blank=True, on_delete=models.CASCADE)
     primary_photo = models.URLField(max_length=200, null=True, blank=True)
-    Neighborhood = models.ForeignKey('main.Neighborhood', null=True, blank=True, on_delete=models.CASCADE)
+    neighborhood = models.ForeignKey('main.Neighborhood', null=True, blank=True, on_delete=models.CASCADE)
     flood_factor_severity = models.CharField(max_length=20, null=True, blank=True)
     flood_trend = models.CharField(max_length=200, null=True, blank=True)
     fire_factor_severity = models.CharField(max_length=20, null=True, blank=True)
@@ -22,6 +22,8 @@ class Property(models.Model):
     status = models.CharField(max_length=10, null=True, blank=True)
     coming_soon_date = models.DateTimeField(null=True, blank=True)
     list_price = models.IntegerField(null=True, blank=True)
+    list_price_min = models.IntegerField(null=True, blank=True)
+    list_price_max = models.IntegerField(null=True, blank=True)
     last_price_change_amount = models.IntegerField(null=True, blank=True)
     last_sold_date = models.DateTimeField(null=True, blank=True)
     last_sold_price = models.IntegerField(null=True, blank=True)
@@ -55,13 +57,19 @@ class Property(models.Model):
     tags = models.ManyToManyField('main.ListItem', related_name="tag")
     unit_count = models.IntegerField(null=True, blank=True)
     baths = models.IntegerField(null=True, blank=True)
+    baths_min = models.IntegerField(null=True, blank=True)
+    baths_max = models.IntegerField(null=True, blank=True)
     baths_consolidated = models.CharField(max_length=5, null=True, blank=True)
     baths_full = models.IntegerField(null=True, blank=True)
     baths_3qtr = models.IntegerField(null=True, blank=True)
     baths_half = models.IntegerField(null=True, blank=True)
     baths_total = models.IntegerField(null=True, blank=True)
     beds = models.IntegerField(null=True, blank=True)
-    garage = models.CharField(max_length=50, null=True, blank=True)
+    beds_min = models.IntegerField(null=True, blank=True)
+    beds_max = models.IntegerField(null=True, blank=True)
+    garage = models.IntegerField(null=True, blank=True)
+    garage_min = models.IntegerField(null=True, blank=True)
+    garage_max = models.IntegerField(null=True, blank=True)
     garage_type = models.CharField(max_length=50, null=True, blank=True)
     construction = models.CharField(max_length=50, null=True, blank=True)
     cooling = models.CharField(max_length=50, null=True, blank=True)
@@ -71,6 +79,8 @@ class Property(models.Model):
     roofing = models.CharField(max_length=20, null=True, blank=True)
     pool = models.CharField(max_length=20, null=True, blank=True)
     sqft = models.IntegerField(null=True, blank=True)
+    sqft_min = models.IntegerField(null=True, blank=True)
+    sqft_max = models.IntegerField(null=True, blank=True)
     lot_sqft = models.IntegerField(null=True, blank=True)
     rooms = models.IntegerField(null=True, blank=True)
     stories = models.IntegerField(null=True, blank=True)
@@ -97,7 +107,7 @@ class ListItem(models.Model):
         return self.name
 
 class Flags(models.Model):
-    property = models.OneToOneField(Property, on_delete=models.CASCADE)
+    property = models.OneToOneField(Property, on_delete=models.CASCADE, related_name='flags')
     is_pending = models.BooleanField(null=True)
     is_contingent = models.BooleanField(null=True)
     is_new_listing = models.BooleanField(null=True)
@@ -117,18 +127,22 @@ class Flags(models.Model):
         return f"Flag: {self.property.slug}"
 
 class Neighborhood(models.Model):
-    area = models.CharField(max_length=50)
-    local_url = models.CharField(max_length=50)
-    slug = AutoSlugField(populate_from='local_url', unique_with=['id'])
+    name = models.CharField(max_length=50, null=True, blank=True)
+    slug_id = models.CharField(max_length=50)
+    slug = AutoSlugField(populate_from='slug_id', unique_with=['id'])
     median_listing_price = models.IntegerField(null=True, blank=True)
-    median_sold_price = models.IntegerField(null=True, blank=True)
-    median_days_on_market = models.IntegerField(null=True, blank=True)
-    median_price_per_sqft = models.IntegerField(null=True, blank=True)
     nearby_neighborhoods = models.ManyToManyField('main.Neighborhood')
-    hot_market_badge = models.CharField(max_length=50, null=True, blank=True)
+    state_code = models.CharField(max_length=5, null=True, blank=True)
+    city = models.CharField(max_length=20, null=True, blank=True)
     
     def __str__(self):
         return self.local_url
+    
+    def properties(self):
+        return self.property_set.all()
+    
+    def properties_count(self):
+        return self.property_set.count()
 
 class PriceHistory(models.Model):
     property = models.ForeignKey(Property, null=True, on_delete=models.CASCADE, related_name='price_history')

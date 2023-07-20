@@ -35,7 +35,7 @@ class Command(BaseCommand):
         sys.path.insert(0, settings.BASE_DIR)
         os.environ['SCRAPY_SETTINGS_MODULE'] = 'realtor.realtor.settings'
         for category in ['buy', 'rent']:
-            for page in range(1, 2):
+            for page in range(3, 4):
                 for state in states:
                     requests.post(f'{scheme}://{domain}/crawl/', data={'url': f'https://www.realtor.com/{category_dict[category]}/{state}/pg-{page}'})
         self.stdout.write("running scrapy")

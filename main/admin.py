@@ -61,6 +61,7 @@ class SchoolAdmin(admin.ModelAdmin):
 
 @admin.register(models.Neighborhood)
 class NeighborhoodAdmin(admin.ModelAdmin):
-    list_display = ('slug', 'local_url',)
+    list_display = ('slug', 'name', 'city', 'state_code',)
+    list_filter = ('state_code',)
     search_fields = ('slug',)
     readonly_fields = ('nearby_neighborhoods',)

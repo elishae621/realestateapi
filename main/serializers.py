@@ -141,9 +141,9 @@ class PropertySerializer(CustomHyperlinkedModelSerializer):
     school_information = CustomListField()
     hoa = CustomListField()
     utilities = CustomListField()
-    location = serializers.SerializerMethodField("get_location")
-    features = serializers.SerializerMethodField("get_features")
-    environmental_risk = serializers.SerializerMethodField("get_environmental_risk")
+    location = serializers.SerializerMethodField()
+    features = serializers.SerializerMethodField()
+    environmental_risk = serializers.SerializerMethodField()
     url = serializers.HyperlinkedIdentityField(
         view_name="property-detail", lookup_field="slug"
     )
@@ -155,7 +155,11 @@ class PropertySerializer(CustomHyperlinkedModelSerializer):
     price_history = PriceHistorySerializer(many=True)
     tax_history = TaxHistorySerializer(many=True)
     nearby_schools = SchoolSerializer(many=True)
+    photos_count = serializers.SerializerMethodField()
     photos = PhotosSerializer(many=True)
+    
+    def get_photos_count(self, obj):
+        return obj.photos_count()
 
     def get_environmental_risk(self, obj):
         return {
@@ -304,7 +308,7 @@ class SchoolSerializer(CustomHyperlinkedModelSerializer):
     nearby_properties = CustomUrlListField(view_name="property-detail")
 
     class Meta:
-        model = models.Property
+        model = models.School
         fields = [
             "url",
             "name",
@@ -320,8 +324,8 @@ class SchoolSerializer(CustomHyperlinkedModelSerializer):
             "funding_type",
             "student_count",
             "parent_rating",
-            "nearby_properties",
             "nearby_properties_count",
+            "nearby_properties",
         ]
         lookup_field = "slug"
 
@@ -331,9 +335,10 @@ class NeighborhoodSerializer(CustomHyperlinkedModelSerializer):
         view_name="neighborhood-detail", lookup_field="slug"
     )
     nearby_neighborhoods = CustomUrlListField(view_name="neighborhood-detail")
+    properties = CustomUrlListField(view_name="property-detail")
 
     class Meta:
-        model = models.Property
+        model = models.Neighborhood
         fields = [
             "url",
             "area",
@@ -344,5 +349,7 @@ class NeighborhoodSerializer(CustomHyperlinkedModelSerializer):
             "median_price_per_sqft",
             "hot_market_badge",
             "nearby_neighborhoods",
+            "properties_count",
+            "properties"
         ]
         lookup_field = "slug"

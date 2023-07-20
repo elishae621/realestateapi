@@ -14,11 +14,12 @@ import environ
 
 # DJANGO INTEGRATION
 
-sys.path.append(os.path.dirname(os.path.abspath('.')))
-os.environ['DJANGO_SETTINGS_MODULE'] = 'realestateapi.settings'
+sys.path.append(os.path.dirname(os.path.abspath(".")))
+os.environ["DJANGO_SETTINGS_MODULE"] = "realestateapi.settings"
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
 import django
+
 django.setup()
 
 
@@ -27,11 +28,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.append(BASE_DIR)
 
 env = environ.Env()
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 BOT_NAME = "realtor"
 
-SPIDER_MODULES = ["realtor.spiders",]
+SPIDER_MODULES = [
+    "realtor.spiders",
+]
 NEWSPIDER_MODULE = "realtor.spiders"
 
 # playwright
@@ -50,44 +53,65 @@ PLAYWRIGHT_LAUNCH_OPTIONS = {
 
 PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT = 0
 
+
 def custom_headers(browser_type, playwright_request, scrapy_headers):
     userAgentStrings = [
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.2227.0 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.2228.0 Safari/537.36',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.3497.92 Safari/537.36',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15',
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.2227.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.2228.0 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.3497.92 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15",
     ]
     return {
-        'User-Agent': random.choice(userAgentStrings),
+        "Authority": "www.realtor.com",
+        "Method": "GET",
+        "Scheme": "https",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Cache-Control": "no-cache",
+        "Dnt": "1",
+        "Pragma": "no-cache",
+        "Referer": "https://www.realtor.com/realestateforsale",
+        # "Sec-Ch-Ua": "Not.A/Brand";v="8", "Chromium";v="114",
+        "Sec-Ch-Ua-Mobile": "?1",
+        "Sec-Ch-Ua-Platform": "Android",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "same-origin",
+        "Sec-Fetch-User": "?1",
+        "Upgrade-Insecure-Requests": "1",
+        "User-Agent": random.choice(userAgentStrings),
     }
+
+
 PLAYWRIGHT_PROCESS_REQUEST_HEADERS = custom_headers
 
 PLAYWRIGHT_CONTEXTS = {
-                "default": {
-                    "viewport": {
-                        "width": 1920,
-                        "height": 1080,
-                    },
-                }
-            }
+    "default": {
+        "viewport": {
+            "width": 1920,
+            "height": 1080,
+        },
+    }
+}
 
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = "INFO"
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = "realtor (+http://www.yourdomain.com)"
+# USER_AGENT = "realtor (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 32
+# CONCURRENT_REQUESTS = 32
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -101,39 +125,39 @@ DOWNLOAD_DELAY = 0
 COOKIES_ENABLED = True
 
 # Disable Telnet Console (enabled by default)
-#TELNETCONSOLE_ENABLED = False
+# TELNETCONSOLE_ENABLED = False
 
 # Override the default request headers:
 DEFAULT_REQUEST_HEADERS = {
-   "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-   "Accept-Language": "en",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en",
 }
 
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
+# SPIDER_MIDDLEWARES = {
 #    "realtor.middlewares.RealtorspiderMiddleware": 543,
-#}
+# }
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     "realtor.middlewares.RealtorDownloaderMiddleware": 543,
-    'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 110,
+    "scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware": 110,
 }
 
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
-#EXTENSIONS = {
+# EXTENSIONS = {
 #    "scrapy.extensions.telnet.TelnetConsole": None,
-#}
+# }
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   "realtor.pipelines.PropertyPipeline": 300,
-   "realtor.pipelines.AgentPipeline": 400,
+    "realtor.pipelines.PropertyPipeline": 300,
+    "realtor.pipelines.AgentPipeline": 400,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -151,7 +175,7 @@ AUTOTHROTTLE_DEBUG = False
 
 # Enable and configure HTTP caching (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
-HTTPCACHE_ENABLED = True 
+HTTPCACHE_ENABLED = True
 HTTPCACHE_EXPIRATION_SECS = 0
 HTTPCACHE_DIR = "httpcache"
 HTTPCACHE_IGNORE_HTTP_CODES = []
