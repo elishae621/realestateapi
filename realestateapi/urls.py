@@ -32,6 +32,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('send/', views.scrapUrlView, name='home'),
     path('crawl/', views.crawl, name='crawl'),
+    path('cancel/', views.cancel, name='cancel'),
 ]
 
 urlpatterns += router.urls

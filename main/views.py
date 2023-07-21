@@ -104,6 +104,16 @@ def scrapUrlView(request):
     )
     return HttpResponse(response.text, content_type="json")
 
+def cancel(request):
+    jobs = scrapyd.list_jobs('default')
+    count = 0
+    for job in jobs['pending']:
+        scrapyd.cancel('default', job.id)
+        count += 1
+    for job in jobs['running']:
+        scrapyd.cancel('default', job['id'])
+        count += 1
+    return HttpResponse(f"{count} jobs cancelled")
 
 @csrf_exempt
 @require_http_methods(["POST", "GET"])  # only get and post
